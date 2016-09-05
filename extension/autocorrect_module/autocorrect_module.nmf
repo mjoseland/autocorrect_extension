@@ -1,0 +1,12 @@
+{
+  "program": {
+    "portable": {
+      "pnacl-translate": {
+        "url": "autocorrect_module.pexe"
+      },
+      "pnacl-debug": {
+        "url": "autocorrect_module_unstripped.bc"
+      }
+    }
+  }
+}
