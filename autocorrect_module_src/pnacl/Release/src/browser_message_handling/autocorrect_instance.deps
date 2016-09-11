@@ -1,0 +1,53 @@
+# Updated by fix_deps.py
+pnacl/Release/src/browser_message_handling/autocorrect_instance.o: \
+  src/browser_message_handling/autocorrect_instance.cpp \
+  src/browser_message_handling/autocorrect_instance.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/instance.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_instance.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_macros.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_stdint.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_resource.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/ppb_console.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_bool.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_var.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/instance_handle.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/view.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/resource.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/pass_ref.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/rect.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_rect.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_point.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_size.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/point.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/size.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/logging.h \
+  /Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/var.h \
+  src/browser_message_handling/../suggestion_generation/suggestion_generator.h \
+  src/browser_message_handling/../suggestion_generation/word_list.h \
+  src/browser_message_handling/../suggestion_generation/word.h
+:
+src/browser_message_handling/autocorrect_instance.cpp:
+src/browser_message_handling/autocorrect_instance.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/instance.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_instance.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_macros.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_stdint.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_resource.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/ppb_console.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_bool.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_var.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/instance_handle.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/view.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/resource.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/pass_ref.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/rect.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_rect.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_point.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/c/pp_size.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/point.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/size.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/logging.h:
+/Users/mj/programming/nacl_sdk/pepper_49/include/ppapi/cpp/var.h:
+src/browser_message_handling/../suggestion_generation/suggestion_generator.h:
+src/browser_message_handling/../suggestion_generation/word_list.h:
+src/browser_message_handling/../suggestion_generation/word.h:

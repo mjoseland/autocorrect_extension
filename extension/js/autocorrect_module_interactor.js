@@ -10,32 +10,39 @@ var textareaList = new Array();
 // dictionary, maps text areas to previous value (string in area)
 var textareaOldValues = new Array();
 
+// set (built from string) of all words that are considered to be part of a word
+var inWordChars = {};
+var inWordCharsStr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\''
+
 // most recently edited text area, not currently used but will be needed to place suggestions
 // at the correct position in the page
 var currentTextArea;
 
 var keyUpTime;
 var receivedMessageTime;
+var moduleInitialised = false;
+var wordResourceFile = 'resources/top_50000_words.txt';
 
 // sets the displayed suggestions on the test page
 // suggestionsStr format: [word1] [word2] [word3] ...
 function setSuggestions(suggestionsStr) {
-	document.getElementById("suggestions").innerHTML = 'words: ' + suggestionsStr;
+	document.getElementById('suggestions').innerHTML = 'words: ' + suggestionsStr;
 }
 
 function setTimeTaken() {
-	document.getElementById("time_taken").innerHTML = 'time: ' + 
+	document.getElementById('time_taken').innerHTML = 'time: ' + 
 		(receivedMessageTime - keyUpTime) + 'ms';
 }
 
 function clearSuggestions() {
 	setSuggestions('-');
-	document.getElementById("time_taken").innerHTML = 'time: -';
+	document.getElementById('time_taken').innerHTML = 'time: -';
 
 }
 
 
 // TODO: ensure only one word has been changed, implement word_before_changed_word
+//
 // makes a new suggestion request message based on the new and old text in a textarea
 // message format: rs:[changed_word] [word_before_changed_word]
 // edge cases:
@@ -48,36 +55,48 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 
 	// iterate backwards through each char. loop ends when i == 0, j == 0, or different chars
 	// are located
-	while (i-- && j-- && newText[i] == oldText[j]);
+	while (--i >= 0 && --j >= 0 && newText[i] == oldText[j]);
 
-	if (newText[i] == ' ') {
+	if (!inWordChars.hasOwnProperty(newText[i])) {
+		console.log('module interactor::makeSuggestionsRequestMessage(): last modified char ' +
+				'is non-word char \'' + newText[i] + '\'');
 		return '-';
 	}
 
-	var suggestionsRequestMessage = 'rs:';
-
-
 	// find the start and end indexes of the modified word
-	while (i < newText.length && ((newText[i] >= 'a' && newText[i] <= 'z') || 
-				(newText[i] >= 'A' && newText[i] <= 'Z'))) {
+	while (i < newText.length && inWordChars.hasOwnProperty(newText[i])) {
 		i++;
 	}
-
 	i--;
+
 	var changedWordEnd = i;
 
-	while (i >= 0 && ((newText[i] >= 'a' && newText[i] <= 'z') || 
-				(newText[i] >= 'A' && newText[i] <= 'Z'))) {
+	while (i >= 0 && inWordChars.hasOwnProperty(newText[i])) {
 		i--;
 	}
 	i++;
 
 	var changedWordStart = i;
 
-	suggestionsRequestMessage += newText.substring(changedWordStart, changedWordEnd + 1) + ' -';
+	//if (changedWordStart === changedWordEnd) {
+		//console.log('module interactor::makeSuggestionsRequestMessage(): changed word start same ' +
+				//'as end');
+		//return '-';
+	//}
+
+	// create suggestions request message
+	var suggestionsRequestMessage = 'rs:';
+
+	// add changed word to message
+	suggestionsRequestMessage += newText.substring(changedWordStart, changedWordEnd + 1);
+
+	// add previous word (word before changed word) to message
+	suggestionsRequestMessage += ' -';
+
 	suggestionsRequestMessage = suggestionsRequestMessage.toLowerCase();
 
-	console.log("makeSuggestionsRequestMessage() message generated: " 
+
+	console.log('module interactor: makeSuggestionsRequestMessage() message generated: ' 
 			+ suggestionsRequestMessage);
 
 	return suggestionsRequestMessage;
@@ -87,7 +106,8 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 // event handler for a change in any text area, locates the change and requests new suggestions
 // from the NaCL module if required
 function handleTextAreaChange(changedTextareaIndex) {
-	console.log('TA changed');	// this isn't firing tim
+	console.log('module interactor: handleTextAreaChange(): TA changed');
+
 	currentTextarea = textareaList[changedTextareaIndex];
 	var oldText = textareaOldValues[changedTextareaIndex];
 	var newText = currentTextarea.value;
@@ -112,10 +132,6 @@ function handleKeyUp() {
 		if (textareaList[i] === document.activeElement) {
 			// if the text area's value has changed, handle the change
 			if (textareaList[i].value != textareaOldValues[i]) {
-				console.log(typeof textareaList[i].value + ' ' + typeof textareaOldValues[i]);
-				console.log(textareaList[i].value);
-				console.log(textareaOldValues[i]);
-
 				handleTextAreaChange(i);
 			}
 
@@ -131,32 +147,28 @@ function handleKeyUp() {
 // reads the words text file from the extension's directory and sends all words to the module
 // in one message
 function sendWordsToModule(){
-	//var textFileUrl = 'chrome-extension:/__MSG_@@extension_id__/resources/top_50000_words.txt'
-	var textFileUrl = chrome.extension.getURL('resources/top_50000_words.txt');
-	//alert(textFileUrl);
+	var textFileUrl = chrome.extension.getURL(wordResourceFile);
 	var httpRequest = new XMLHttpRequest();
 
     httpRequest.open('GET', textFileUrl, true);
     httpRequest.send(null);
     httpRequest.onreadystatechange = function () {
         if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-			//console.log(httpRequest.responseText.substring(0, 100));
 			autocorrectModule.postMessage('wl:' + httpRequest.responseText);
-        }
+        } else {
+			console.log('module interactor: sendWordsToModule(): request or status not ready');
+		}
     }
 }
 
 // called on module load
 function moduleDidLoad() {
   	autocorrectModule = document.getElementById('autocorrect_module');
-	
-	sendWordsToModule();
-
 
  	if (typeof jQuery == 'undefined') {
-		console.log("JQ not loaded");
+		console.log('module interactor: moduleDidLoad(): JQ not loaded');
 	} else {
-		console.log("JQ loaded");
+		console.log('module interactor: moduleDidLoad(): JQ loaded');
 	} 
 
 	// find all text areas and save current values to textareaOldValues
@@ -166,10 +178,17 @@ function moduleDidLoad() {
 		textareaOldValues.push(textareaList[i].value);
 	}
 
-
-	console.log(textareaList.length + ' text areas found');
+	console.log('module interactor: moduleDidLoad(): ' + textareaList.length + ' text areas found');
 
 	window.onkeyup = handleKeyUp;
+
+	// add all chars that are considered to be part of a word
+	for (var i = 0; i < inWordCharsStr.length; i++) {
+		inWordChars[inWordCharsStr[i]] = true;
+	}
+
+	// TODO, only call this after rw message received
+	sendWordsToModule();
 }
 
 // handles the receiving of a message from the NaCL module
@@ -177,25 +196,40 @@ function moduleDidLoad() {
 // 		new suggestions: ns:[word1] [word2] [word3]		(count of words may vary)
 function handleMessage(messageEvent) {
 	var receivedMessage = messageEvent.data;
-	console.log('handleMessage() received: ' + receivedMessage);
+	console.log('module interactor: handleMessage() received: ' + receivedMessage);
 
 	// set time taken element
 	receivedMessageTime = new Date().getTime();
 	setTimeTaken();
 
 	
-	if (receivedMessage.substring(0, 3) === 'ns:') {
+	// ns: new suggestions
+	if (receivedMessage.substring(0, 2) === 'ns') {
 		setSuggestions(receivedMessage.substring(3));
 	}
+
+	// rw: request words
+	if (receivedMessage.substring(0, 2) === 'rw') {
+		sendWordsToModule();
+	}
+
+	// si: module successfully initialised
+	if (receivedMessage.substring(0, 2) === 'si') {
+		moduleInitialised = true;
+	}
+
+
 }
 
 // TODO: delete if not useful
+//
 // event handler for new page load, may want ot migrate textarea scanning to this function
 function pageDidLoad() {
-	console.log('Page loaded');
+	console.log('module interactor: pageDidLoad(): Page loaded');
 }
 
 // TODO: delete if not useful
+//
 // updates the status of the NaCL module
 function updateStatus(new_status) {
   	if (new_status)
