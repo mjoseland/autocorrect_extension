@@ -1,8 +1,0 @@
-# Updated by fix_deps.py
-pnacl/Release/src/suggestion_generation/word_list.o: \
-  src/suggestion_generation/word_list.cpp \
-  src/suggestion_generation/word_list.h src/suggestion_generation/word.h
-:
-src/suggestion_generation/word_list.cpp:
-src/suggestion_generation/word_list.h:
-src/suggestion_generation/word.h:
