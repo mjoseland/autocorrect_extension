@@ -1,6 +1,9 @@
 .DS_Store
 .idea
 
+autocorrect_module_src/pnacl/*
+*.ycm_extra_conf*
+
 *.swp
 *.pexe
 *.o
