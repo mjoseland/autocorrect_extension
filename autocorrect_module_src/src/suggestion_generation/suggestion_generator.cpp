@@ -4,33 +4,14 @@
 
 #include "suggestion_generator.h"
 
+#define ID 4	// insert-delete cost defuault
+#define IDS 3	// insert-delete cost if char is same as previous
+
 
 SuggestionGenerator::SuggestionGenerator() {
-	// TODO: remove, normal file sys access forbidden in NaCL
-	/*
-	ifstream word_file;
-	word_file.open(WORD_FILE_DIR);
-
-	if (!word_file.is_open()) {
-		cerr << "SuggestionGenerator::SuggestionGenerator(): Couldn't open supplied word list\n";
-	} else {
-		string line;
-		size_t word_count = 0;
-		size_t tab_i;
-
-		while (getline(word_file, line)) {
-			tab_i = line.find('\t');
-			word_list_.addWord(line.substr(0, tab_i), stoul(line.substr(tab_i + 1)));
-			word_count++;
-		}
-
-		cout << "SuggestionGenerator::createWordList(): Added " << word_count << 
-			" words to wordList\n";
-	}*/
-
-	// TODO: add functionality later, use multiple word lists to divide words into categories
-	// so previous words are used to generate suggestions
 	last_previous_word_ = '-';
+
+
 }
 
 string SuggestionGenerator::getSuggestions(string modified_word, string previous_word) {

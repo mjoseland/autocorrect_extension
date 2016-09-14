@@ -41,6 +41,8 @@ void Word::addCompareChar(char c) {
     // increment the column index and update current_column_
     j_++;
     current_column_ = j_ & 1;
+
+	previous_char_ = c;
 }
 
 
@@ -75,34 +77,43 @@ bool Word::operator==(Word other_word) {
     return compare_suitability(other_word) == 0;
 }
 
-/* PRIVATE */
+
+/* -------------------- private functions -------------------- */
+
 
 uint8_t Word::get_element_ed(char c, size_t i) {
-    uint8_t substitution_cost = 0;
+	// deletion and insertion refer to doing that operation to the compare word (ie. not word_)
 
+	// get the substitution cost
+    uint8_t substitution_cost = 0;
     if (c != word_[i]) {
-        substitution_cost = 1;
+        substitution_cost = EditCostArray::subCost(c, word_[i]);
     }
+
+	// get the insert/delete cost
+	uint8_t ins_del_cost = EditCostArray::insDelCost(previous_char_, c, word_[i]);
 
     // if we are adding the first char of a new compare word
     if (j_ == 0) {
-        // if element is the first row of the matrix: return the substitution cost
+        // if element is the first row of the matrix: return the substitution cost * penalty
         if (i == 0) {
-            return substitution_cost;
+            return substitution_cost * FIRST_LETTER_PENALTY;
         }
 
-        // if not first row: return the value of the element above + 1 (deletion)
-        return ed_matrix_[i - 1][0] + 1;
+        // if not first row: return the value of the element above + deletion cost * penalty
+        return ed_matrix_[i - 1][0] + (ins_del_cost * FIRST_LETTER_PENALTY);
     }
 
-    // if element is the first row and not the first column, return left number + 1 (insertion)
+
+    // if element is the first row and not the first column, return left number + insertion cost
     if (i == 0) {
-        return ed_matrix_[i][!current_column_] + 1;
+        return ed_matrix_[i][!current_column_] + ins_del_cost;
     }
 
     // we aren't in the first row or column: return min of insertion, deletion, or substitution
-    return min_of_three(ed_matrix_[i][!current_column_] + 1, ed_matrix_[i - 1][current_column_] + 1,
-                        ed_matrix_[i - 1][!current_column_] + substitution_cost);
+    return min_of_three(ed_matrix_[i][!current_column_] + ins_del_cost,		// insertion
+			ed_matrix_[i - 1][current_column_] + ins_del_cost,				// deletion
+            ed_matrix_[i - 1][!current_column_] + substitution_cost);		// substitution
 }
 
 uint8_t Word::min_of_three(uint8_t a, uint8_t b, uint8_t c) {

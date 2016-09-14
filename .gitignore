@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+todo.txt
 
 autocorrect_module_src/pnacl/*
 *.ycm_extra_conf*

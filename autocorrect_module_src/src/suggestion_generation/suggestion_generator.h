@@ -8,6 +8,7 @@
 #include <iostream>
 //#include <fstream>
 #include <sstream>
+#include <array>
 
 #include "word_list.h"
 

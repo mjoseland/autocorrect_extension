@@ -7,10 +7,13 @@
 #define GLOBAL_AUTOCOMPLETE_WORD_H
 
 #define MIN(a, b) ((a < b) ? a : b)
+#define FIRST_LETTER_PENALTY 3
 
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include "edit_cost_array.h"
 
 using namespace std;
 
@@ -45,6 +48,7 @@ private:
 
     size_t j_;              // the "index" of the next char to be added in the matrix
                             // (if it wasn't two columns)
+	char previous_char_ = '*';	// the char that was previously added to the compare word
     uint8_t min_ed_;
     bool current_column_;   // index to calculate ed of next char added in ed_matrix_
     vector<vector<uint8_t>> ed_matrix_; // 2-colummn matrix for calculating edit distance

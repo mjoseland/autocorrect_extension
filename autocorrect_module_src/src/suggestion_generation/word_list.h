@@ -6,7 +6,7 @@
 #define GLOBAL_AUTOCOMPLETE_WORDLIST_H
 
 #define CLOSEST_WORDS_N 5   // the max number of words to add to _closest_words
-#define MAX_ED 2            // the max ed for a word to be added to _closest_words
+#define MAX_ED 15            // the max ed for a word to be added to _closest_words
 
 #include <vector>
 #include <list>
