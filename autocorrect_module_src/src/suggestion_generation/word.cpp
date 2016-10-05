@@ -2,7 +2,8 @@
 
 /* PUBLIC */
 
-Word::Word(string word, uint32_t count) : word_(word), word_len_(word_.size()), count_(count) {
+Word::Word(string word, uint32_t count, float distribution) : word_(word), 
+			word_len_(word_.size()), count_(count), distribution_(distribution) {
     j_ = 0;
     current_column_ = false;
 	min_ed_ = 0;
@@ -50,6 +51,12 @@ void Word::resetCompareWord() {
     j_ = 0;
     current_column_ = false;
 	min_ed_ = 0;
+	previous_char_ = '*';
+
+	if (word_ == "help") {
+		cerr << (int)min_ed_ << endl;
+		cerr << (int)j_ << endl;
+	}
 }
 
 /* Return true if this word is a less suitable match than the word it is being compared to */
@@ -82,7 +89,12 @@ bool Word::operator==(Word other_word) {
 
 
 uint8_t Word::get_element_ed(char c, size_t i) {
-	// deletion and insertion refer to doing that operation to the compare word (ie. not word_)
+	if (word_ == "help") {
+		cout << "i, j_: " << i << ' ' << j_ << endl;
+	}
+
+	// deletion and insertion refer to doing that operation to the compare word 
+	// (ie. not word_)
 
 	// get the substitution cost
     uint8_t substitution_cost = 0;
@@ -105,12 +117,14 @@ uint8_t Word::get_element_ed(char c, size_t i) {
     }
 
 
-    // if element is the first row and not the first column, return left number + insertion cost
+    // if element is the first row and not the first column, return left number + insertion 
+	// cost
     if (i == 0) {
         return ed_matrix_[i][!current_column_] + ins_del_cost;
     }
 
-    // we aren't in the first row or column: return min of insertion, deletion, or substitution
+    // we aren't in the first row or column: return min of insertion, deletion, or 
+	// substitution
     return min_of_three(ed_matrix_[i][!current_column_] + ins_del_cost,		// insertion
 			ed_matrix_[i - 1][current_column_] + ins_del_cost,				// deletion
             ed_matrix_[i - 1][!current_column_] + substitution_cost);		// substitution

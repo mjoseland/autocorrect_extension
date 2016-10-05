@@ -17,10 +17,9 @@ TARGET = autocorrect_module
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 
-
 LIBS = ppapi_cpp ppapi pthread
 
-CFLAGS = -stdlib=libc++ -std=gnu++11 -Wall -Wno-long-long -Wswitch-enum -pedantic -Werror
+CFLAGS = -stdlib=libc++ -std=gnu++11 -Wall -Wno-long-long -Wswitch-enum -pedantic -Werror -O2
 SOURCES := $(wildcard src/browser_message_handling/*.cpp)
 SOURCES += $(wildcard src/suggestion_generation/*.cpp)
 #SOURCES := src/browser_message_handling/autocorrect_module.cpp

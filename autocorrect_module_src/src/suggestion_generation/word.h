@@ -19,32 +19,38 @@ using namespace std;
 
 class Word{
 public:
-    Word(string word, uint32_t count);
+    Word(string word, uint32_t count, float distribution);
 
     string getWord();
     size_t getLength();
     uint8_t getMinEditDistance();
     uint32_t getCount();
 
+	// add another char to the compare word
     void addCompareChar(char c);
+	// reset the compare word
     void resetCompareWord();
 
-    /* Return true if this word is a less suitable match than the word it is being compared to */
+    // Return true if this word is a less suitable match than the word it is being compared 
+	// to
     bool operator<(Word compareword_);
-    /* Return true if this word's suitability is equal to or less than compareword_ */
+    // Return true if this word's suitability is equal to or less than compareword_
     bool operator<=(Word other_word);
-    /* Return true if this word is a more suitable match than the other word */
+    // Return true if this word is a more suitable match than the other word
     bool operator>(Word other_word);
-    /* Return true if this word's suitability is equal to or more than the other word */
+    // Return true if this word's suitability is equal to or more than the other word
     bool operator>=(Word other_word);
-    /* Return true if this word has an equal match suitability to the other word */
+    // Return true if this word has an equal match suitability to the other word
     bool operator==(Word other_word);
 
 
 private:
     const string word_;
     const size_t word_len_;
-    const uint32_t count_;  // the frequency count of the word (larger value : word used more often)
+    const uint32_t count_;  // the frequency count of the word (larger value : word used more 
+							// often)
+	const float distribution_;	// the distribution of the word : higher = used in a wider
+								// variety of situations
 
     size_t j_;              // the "index" of the next char to be added in the matrix
                             // (if it wasn't two columns)

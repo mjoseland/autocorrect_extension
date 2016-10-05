@@ -21,7 +21,7 @@ var currentTextArea;
 var keyUpTime;
 var receivedMessageTime;
 var moduleInitialised = false;
-var wordResourceFile = 'resources/top_50000_words.txt';
+var wordResourceFile = 'resources/word_list.txt';
 
 // sets the displayed suggestions on the test page
 // suggestionsStr format: [word1] [word2] [word3] ...

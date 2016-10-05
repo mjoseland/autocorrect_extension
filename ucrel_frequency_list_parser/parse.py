@@ -305,6 +305,24 @@ def addValidWords(wordList):
             originalPoS = lineList[1]
             originalWord = lineList[0]
             continue
+
+        # handle the "Ex" word listing for there
+        if lineList[0] == "there" and lineList[1] == "Ex":
+            wordEntry = (lineList[0], "Pron", lineList[3], lineList[5])
+            wordList.append(wordEntry)
+
+            wordEntry = (lineList[0], "NoC", lineList[3], lineList[5])
+            wordList.append(wordEntry)
+
+            wordEntry = (lineList[0], "Int", lineList[3], lineList[5])
+            wordList.append(wordEntry)
+
+            wordEntry = (lineList[0], "Adj", lineList[3], lineList[5])
+            wordList.append(wordEntry)
+
+            continue
+
+
         
         # no other conditions have been met so we should be fine to just add the line's data
         # to the wordList
