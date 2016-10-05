@@ -4,14 +4,11 @@
 
 #include "suggestion_generator.h"
 
-#define ID 4	// insert-delete cost defuault
-#define IDS 3	// insert-delete cost if char is same as previous
+
 
 
 SuggestionGenerator::SuggestionGenerator() {
 	last_previous_word_ = '-';
-
-
 }
 
 string SuggestionGenerator::getSuggestions(string modified_word, string previous_word) {
@@ -19,9 +16,9 @@ string SuggestionGenerator::getSuggestions(string modified_word, string previous
 		 "previous_word: " << modified_word << ", " << previous_word << endl;
 	auto n = modified_word.size();
 
-	// check for the case that word_list.addCompareChar() can't be used. if the only difference
-	// between modified_word and previous_word and their last_ equivalents is that modified
-	// word has a new char appended then the else branch should be executed
+	// check for the case that word_list.addCompareChar() can't be used. if the only 
+	// difference between modified_word and previous_word and their last_ equivalents is 
+	// that modified word has a new char appended then the else branch should be executed
 	if (last_previous_word_ != previous_word || 
 			modified_word.size() != last_modified_word_.size() + 1 ||
 			modified_word.substr(0, n - 1) != last_modified_word_) {

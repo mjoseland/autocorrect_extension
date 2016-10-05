@@ -2,7 +2,7 @@
 
 static const COST substitution_costs[] = 
 			// a   b   c   d   e   f   g   h   i   j   k   l   m   n   o   p   q   r   s   t   u   v   w   x   y   z
-			  {0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, KP, NP, KP, NP, NP, NP, KP, NP, NP, // a
+			  {0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, KP, KP, KP, NP, NP, NP, KP, NP, NP, // a
 			   NP, 0,  NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // b
 			   NP, NP, 0,  NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // c
 			   NP, NP, NP, 0,  NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // d
