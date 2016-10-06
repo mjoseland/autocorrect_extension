@@ -1,35 +1,51 @@
 #include "edit_cost_array.h"
 
-static const COST substitution_costs[] = 
-			// a   b   c   d   e   f   g   h   i   j   k   l   m   n   o   p   q   r   s   t   u   v   w   x   y   z
-			  {0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, KP, KP, KP, NP, NP, NP, KP, NP, NP, // a
-			   NP, 0,  NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // b
-			   NP, NP, 0,  NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // c
-			   NP, NP, NP, 0,  NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // d
-			   NP, NP, NP, NP, 0,  NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // e
-			   NP, NP, NP, NP, NP, 0,  NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // f
-			   NP, NP, NP, NP, NP, NP, 0,  KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // g
-			   NP, NP, NP, NP, NP, NP, NP, 0,  KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // h
-			   NP, NP, NP, NP, NP, NP, NP, KP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // i
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // j
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // k
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // l
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // m
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // n
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // o
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, // p
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, NP, // q
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, NP, // r
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, NP, // s
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, NP, // t
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, NP, // u
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, NP, // v
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, NP, // w
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, NP, // x
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0,  NP, // y
-			   NP, NP, NP, NP, NP, NP, NP, KP, KP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, NP, 0}; // z
+vector<COST> EditCostArray::substitution_costs_ = vector<COST>(676, NP);
 
-const COST *EditCostArray::substitution_costs_ = substitution_costs;
+EditCostArray::SubstitutionCostInitialiser::SubstitutionCostInitialiser() {
+	// initialise vector with all positions storing the non-proximal cost
+	//EditCostArray::substitution_costs_ = vector<COST>(676, NP);
+
+	// replace cost at all letter self-matches with 0
+	for (size_t i = 0; i < 26; i++) {
+		EditCostArray::substitution_costs_[i * 26 + i] = 0;
+	}
+
+	// change costs for all keys proximal to each letter 
+	// 		ie. a is proximal to the letters qwsxz on a keyboard
+	vector<string> proximal_keys = {"qwsxz", 	// a
+									"vghn",
+									"xdfv",		// c
+									"serfcx",
+									"wrfds",	// e
+									"drtgvc",
+									"ftyhbv",	// g
+									"gyujnb",
+									"uolkj",	// i
+									"huikmn",	
+									"jiolm",	// k
+									"kop",
+									"njk", 		// m
+									"bhjm",
+									"iplk",		// o
+									"ol",
+									"wsa",		// q
+									"etgfd",
+									"awedxz",	// s
+									"ryhgf",
+									"yikjh",	// u
+									"cfgb",
+									"qedsa",	// w
+									"zsdc",
+									"tujhg",	// y
+									"asx"};
+
+	for (size_t i = 0; i < 26; i++) {
+		for (char c: proximal_keys[i]) {
+			EditCostArray::substitution_costs_[i * 26 + (c - 'a')] = KP;
+		}
+	}
+}
 
 
 
@@ -57,3 +73,5 @@ COST EditCostArray::subCost(char new_char, char word_char) {
 
 	return substitution_costs_[(new_char - 'a') * 26 + (word_char - 'a')];
 }
+
+/* -------------------- private functions -------------------- */

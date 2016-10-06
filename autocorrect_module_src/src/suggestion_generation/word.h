@@ -8,12 +8,14 @@
 
 #define MIN(a, b) ((a < b) ? a : b)
 #define FIRST_LETTER_PENALTY 3
+#define LEN_MISMATCH_PENALTY_MULT 0
 
 #include <vector>
 #include <string>
 #include <iostream>
 
 #include "edit_cost_array.h"
+#include "definitions.h"
 
 using namespace std;
 
@@ -23,7 +25,9 @@ public:
 
     string getWord();
     size_t getLength();
+	// get the cost of replacing the comare word with this word
     uint8_t getCost();
+	// get the frequency count of the word
     uint32_t getCount();
 
 	// add another char to the compare word
@@ -56,6 +60,7 @@ private:
                             // (if it wasn't two columns)
 	char previous_char_ = '*';	// the char that was previously added to the compare word
     uint8_t min_ed_;
+	uint8_t cost_;			// cost of replacing the compare word with this word
     bool current_column_;   // index to calculate ed of next char added in ed_matrix_
     vector<vector<uint8_t>> ed_matrix_; // 2-colummn matrix for calculating edit distance
 

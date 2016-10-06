@@ -78,8 +78,6 @@ void SuggestionGenerator::useWords(string words) {
 
 		line_ss >> word_str >> word_pos_str >> word_count >> word_frequency;
 
-		//cerr << word_str << ' ' << word_pos_str << word_count << word_frequency << endl;
-
 		dictionary_.addWord(word_str, word_pos_str, word_count, word_frequency);
 
 		added_word_count++;

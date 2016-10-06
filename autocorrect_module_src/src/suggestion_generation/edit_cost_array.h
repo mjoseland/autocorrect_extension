@@ -5,6 +5,9 @@
 #include <array>
 
 #include "definitions.h"
+#include <vector>
+#include <array>
+#include <string>
 
 // costs of different edit operations
 // insert/delete
@@ -20,16 +23,25 @@
 
 using namespace std;
 
-// TODO: possibly make all constexpr, not doing it now cause it's too much trobule without c++14
+// TODO: possibly make everythingconstexpr, not doing it now cause it's too much trouble 
+// without c++14
 class EditCostArray {
+public:
+	// class to initialise substitution_costs_
+	class SubstitutionCostInitialiser {
 	public:
+		SubstitutionCostInitialiser();
+	};
 
-		static COST insDelCost(char previous_char, char new_char, char word_char);
-		static COST subCost(char new_char, char word_char);
+    friend class Initializer;
+		
+	// the cost of substituting one char for another
+	static vector<COST> substitution_costs_;
 
+	// initialise class to initialise the variable above
+	static SubstitutionCostInitialiser initialiser;
 
-	private:
-
-		static const COST *substitution_costs_;
-
+	static COST insDelCost(char previous_char, char new_char, char word_char);
+	static COST subCost(char new_char, char word_char);
+private:
 };

@@ -20,7 +20,7 @@ size_t Word::getLength() {
 }
 
 uint8_t Word::getCost() {
-    return min_ed_;
+    return cost_;
 }
 
 uint32_t Word::getCount() {
@@ -29,7 +29,17 @@ uint32_t Word::getCount() {
 
 void Word::addCompareChar(char c) {
     uint8_t edit_distance;
+	
+	uint8_t length_mismatch_penalty;	// the difference between this word's length and 
+										// that of the compare word
+	if (word_len_ <= j_ + 1) {
+		length_mismatch_penalty = (j_ + 1 - word_len_) * LEN_MISMATCH_PENALTY_MULT;
+	} else {
+		length_mismatch_penalty = (word_len_ - j_ + 1) * LEN_MISMATCH_PENALTY_MULT;
+	}
+
     min_ed_ = UINT8_MAX;
+	cost_ = UINT8_MAX;
 
     // find ED for all elements in the column
     for (size_t i = 0; i < word_len_; i++) {
@@ -37,6 +47,8 @@ void Word::addCompareChar(char c) {
 
         ed_matrix_[i][current_column_] = edit_distance;
         min_ed_ = MIN(min_ed_, edit_distance);
+
+		cost_ = MIN(cost_, min_ed_ + length_mismatch_penalty);
     }
 
     // increment the column index and update current_column_
@@ -44,6 +56,10 @@ void Word::addCompareChar(char c) {
     current_column_ = j_ & 1;
 
 	previous_char_ = c;
+
+	if (word_ == "help") {
+		cout << "New data in word \"help\" (j_ cost_): " << j_ << ' ' << cost_ << endl;
+	}
 }
 
 
@@ -51,12 +67,8 @@ void Word::resetCompareWord() {
     j_ = 0;
     current_column_ = false;
 	min_ed_ = 0;
+	cost_ = 0;
 	previous_char_ = '*';
-
-	if (word_ == "help") {
-		cerr << (int)min_ed_ << endl;
-		cerr << (int)j_ << endl;
-	}
 }
 
 /* Return true if this word is a less suitable match than the word it is being compared to */
@@ -89,10 +101,6 @@ bool Word::operator==(Word other_word) {
 
 
 uint8_t Word::get_element_ed(char c, size_t i) {
-	if (word_ == "help") {
-		cout << "i, j_: " << i << ' ' << j_ << endl;
-	}
-
 	// deletion and insertion refer to doing that operation to the compare word 
 	// (ie. not word_)
 
@@ -139,13 +147,13 @@ uint8_t Word::min_of_three(uint8_t a, uint8_t b, uint8_t c) {
  *  if suitability is equal return 0
  */
 int Word::compare_suitability(Word other_word) {
-    auto other_word_ed = other_word.getMinEditDistance();
+    auto other_word_cost = other_word.getCost();
 
-    if (min_ed_ < other_word_ed) {
+    if (min_ed_ < other_word_cost) {
         return 1;
     }
 
-    if (min_ed_ > other_word_ed) {
+    if (min_ed_ > other_word_cost) {
         return -1;
     }
 

@@ -92,10 +92,10 @@ ngramsWordSet = getNgramsWords()
 
 # manually adds words that are missing or incomplete in the list being parsed
 def addPresetWords(wordList):
-    wordEntry = ("is", "Verb", "10875", "0.95")     # same freq, dist as "it"
-    wordList.append(wordEntry)
-    wordEntry = ("be", "VerbPa", "7000", "0.94")
-    wordList.append(wordEntry)
+    # wordEntry = ("is", "Verb", "10875", "0.95")     # same freq, dist as "it"
+    # wordList.append(wordEntry)
+    # wordEntry = ("be", "VerbPa", "7000", "0.94")
+    # wordList.append(wordEntry)
     wordEntry = ("are", "Verb", "5000", "0.88")
     wordList.append(wordEntry)
 

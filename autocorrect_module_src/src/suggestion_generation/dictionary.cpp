@@ -70,25 +70,15 @@ void Dictionary::addCompareChar(char c) {
 			// should be safe because words_ won't be reallocated in this method
 			// TODO: maybe fix for good practice
 			word_ptr = &words_[i][j];
-			
-			if (word_ptr->getWord() == "help") {
-				cout << word_ptr->getWord() << " MED: "
-					<< (int)word_ptr->getMinEditDistance() << endl;
-			}
 
-			if (word_ptr->getMinEditDistance() > MAX_ED) {
+			if (word_ptr->getCost() > MAX_ED) {
 				continue;
 			}
 
 			word_ptr->addCompareChar(c);
 
-			if (word_ptr->getWord() == "help") {
-				cout << word_ptr->getWord() << " MED (after): " 
-					<< (int)word_ptr->getMinEditDistance() << endl;
-			}
-
 			// if the word should be added as a new closest word, do so 
-			if (word_ptr->getMinEditDistance() <= MAX_ED &&
+			if (word_ptr->getCost() <= MAX_ED &&
 						 (closest_word_indexes_.size() < CLOSEST_WORDS_N ||
 						 min_closest_word == nullptr || 		//TODO: remove line
 						 *word_ptr > *min_closest_word)) {
@@ -125,11 +115,6 @@ void Dictionary::resetCompareWord() {
 	for (auto &pos_vector: words_) {
 		for (auto &word: pos_vector) {
 			word.resetCompareWord();
-
-			if (word.getWord() == "help") {
-				cerr << "reset help " << endl;
-				cerr << "new MED: " << (int)word.getMinEditDistance() << endl;
-			}
 		}
 	}
 }
