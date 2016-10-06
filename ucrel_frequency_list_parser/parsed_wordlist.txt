@@ -1,3 +1,6 @@
+is	Verb	10875	0.95
+be	VerbPa	7000	0.94
+are	Verb	5000	0.88
 a-level	NoC	2	0.74
 a-levels	NoCPl	1	0.82
 Aaron	NoP	3	0.69
@@ -1923,6 +1926,10 @@ Alyssias	NoPPl	2	0.00
 Alzheimer	NoP	2	0.71
 Alzheimer's	NoPPo	2	0.64
 Alzheimers	NoPPl	1	0.28
+am	Adv	10	0.89
+am	Verb	6	0.87
+ammed	VerbPa	0	0.00
+ams	VerbUs	0	0.30
 amalgam	NoC	1	0.88
 amalgams	NoCPl	0	0.56
 amalgamate	Adj	0	0.51
@@ -2167,6 +2174,7 @@ Amy	NoP	8	0.77
 Amy's	NoPPo	5	0.69
 Amys	NoPPl	3	0.31
 amyl	NoC	0	0.68
+an	Det	3430	0.97
 Ana	NoP	4	0.22
 Ana's	NoPPo	3	0.20
 Anas	NoPPl	2	0.09
@@ -5366,6 +5374,11 @@ bayonet	NoC	1	0.84
 bayonets	NoCPl	1	0.77
 bazaar	NoC	2	0.79
 bazaars	NoCPl	1	0.73
+be	Verb	6644	0.98
+been	VerbPa	2686	0.98
+being	VerbGe	862	0.98
+is	VerbUs	9982	0.96
+was	VerbUs	9236	0.96
 beach	NoC	38	0.87
 beaches	NoCPl	10	0.85
 beach	Verb	0	0.72
@@ -44820,6 +44833,7 @@ muzzle	Verb	0	0.71
 muzzled	VerbPa	0	0.73
 muzzles	VerbUs	0	0.30
 muzzling	VerbGe	0	0.57
+my	Det	1525	0.93
 myelin	NoC	0	0.63
 myeloid	Adj	0	0.50
 myeloma	NoC	0	0.55
@@ -45780,6 +45794,11 @@ Nixons	NoPPl	2	0.31
 Nizan	NoP	6	0.00
 Nizan's	NoPPo	4	0.00
 Nizans	NoPPl	3	0.00
+no	Adv	17	0.94
+no	Det	1343	0.98
+no	Int	662	0.75
+no	NoC	66	0.46
+nos	NoCPl	1	0.69
 no-go	Adj	1	0.85
 no-hoper	NoC	0	0.70
 no-hopers	NoCPl	0	0.78
@@ -46879,6 +46898,8 @@ omnipresent	NoC	0	0.51
 omniscience	NoC	0	0.80
 omniscient	Adj	1	0.81
 omnivorous	Adj	0	0.71
+on	Adv	756	0.93
+on	Prep	6475	0.97
 on-board	Adj	1	0.79
 on-going	Adj	2	0.89
 on-line	Adj	3	0.75
@@ -69444,7 +69465,10 @@ therapists	NoCPl	2	0.83
 therapies	NoCPl	2	0.78
 therapy	NoC	19	0.86
 there	Adv	746	0.88
-there	Ex	2532	0.97
+there	Pron	2532	0.97
+there	NoC	2532	0.97
+there	Int	2532	0.97
+there	Adj	2532	0.97
 thereabouts	Adv	1	0.86
 thereafter	Adv	14	0.91
 thereby	Adv	27	0.92
@@ -75341,6 +75365,7 @@ wayside	NoC	1	0.90
 waysides	NoCPl	0	0.00
 wayward	Adj	2	0.89
 waywardness	NoC	0	0.76
+we	Pron	3578	0.92
 weak	Adj	36	0.94
 weaker	Adj	7	0.93
 weakest	Adj	2	0.92

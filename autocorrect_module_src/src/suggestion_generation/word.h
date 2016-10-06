@@ -23,7 +23,7 @@ public:
 
     string getWord();
     size_t getLength();
-    uint8_t getMinEditDistance();
+    uint8_t getCost();
     uint32_t getCount();
 
 	// add another char to the compare word

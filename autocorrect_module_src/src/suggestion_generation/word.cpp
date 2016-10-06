@@ -19,7 +19,7 @@ size_t Word::getLength() {
     return word_len_;
 }
 
-uint8_t Word::getMinEditDistance() {
+uint8_t Word::getCost() {
     return min_ed_;
 }
 

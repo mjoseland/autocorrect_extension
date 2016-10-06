@@ -70,8 +70,8 @@ romanNumeralRegex = re.compile('xi|xl|xv|xx')
 addedWordsSet = set()
 
 # set of two letter words
-twoLetterWords = {'as', 'at', 'by', 'do', 'go', 'hi', 'if', 'in', 'it', 'of', 'oh', 'or',
-        'to', 'up', 'ya'}
+twoLetterWords = {'am', 'an', 'as', 'at', 'be', 'by', 'do', 'go', 'hi', 'if', 'in', 'is', 
+        'it', 'my', 'no', 'of', 'oh', 'on', 'or', 'to', 'up', 'us', 'we', 'ya'}
 
 def getNgramsWords():
     inFile = open(NGRAMS_FILE_NAME, 'r')
@@ -89,6 +89,17 @@ def getNgramsWords():
 # end getNgramsWords()
 
 ngramsWordSet = getNgramsWords()
+
+# manually adds words that are missing or incomplete in the list being parsed
+def addPresetWords(wordList):
+    wordEntry = ("is", "Verb", "10875", "0.95")     # same freq, dist as "it"
+    wordList.append(wordEntry)
+    wordEntry = ("be", "VerbPa", "7000", "0.94")
+    wordList.append(wordEntry)
+    wordEntry = ("are", "Verb", "5000", "0.88")
+    wordList.append(wordEntry)
+
+# end addPresentWords()
 
 # return True if a word should be filtered (ie. not added to the file)
 def filterWord(lineList):
@@ -282,6 +293,9 @@ def addValidWords(wordList):
     # countSkipped = 0
     frequency = 0
     dispersion = 0.0
+
+    # manually add the words "is" and "are"
+    addPresetWords(wordList)
 
     # iterates and checks all lines that have a word in the first column
     for line in inFile:
