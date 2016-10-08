@@ -5,8 +5,6 @@
 #include "suggestion_generator.h"
 
 
-
-
 SuggestionGenerator::SuggestionGenerator() {
 	previous_word_ = '-';
 }
@@ -30,12 +28,12 @@ string SuggestionGenerator::getSuggestions(string modified_word, string previous
 
 		// add each compare char to the dictionary
 		for (auto c: modified_word) {
-			dictionary_.addCompareChar(c);
+			dictionary_.addCompareChar(c, previous_word);
 		}
 	} else {
 		cout << "SuggestionGenerator::getSuggestions(): Adding only one compare char\n";
 
-		dictionary_.addCompareChar(modified_word[n - 1]);
+		dictionary_.addCompareChar(modified_word[n - 1], previous_word);
 	}
 
 	auto closest_words = dictionary_.getClosestWords();

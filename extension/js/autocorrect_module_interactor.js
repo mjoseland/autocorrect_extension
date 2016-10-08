@@ -12,7 +12,7 @@ var textareaOldValues = new Array();
 
 // set (built from string) of all words that are considered to be part of a word
 var inWordChars = {};
-var inWordCharsStr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\''
+var inWordCharsStr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\'-'
 
 // most recently edited text area, not currently used but will be needed to place suggestions
 // at the correct position in the page
@@ -46,7 +46,7 @@ function clearSuggestions() {
 // makes a new suggestion request message based on the new and old text in a textarea
 // message format: rs:[changed_word] [word_before_changed_word]
 // edge cases:
-// 		no word before: send message "rs:[changed_word] -"
+// 		no word, comma, or period before: send message "rs:[changed_word] -"
 // 		change spans multiple words (eg. paste): no message sent, suggestions cleared
 // 		change falsely reported (text area value is the same): no message sent
 function makeSuggestionsRequestMessage(newText, oldText) {
@@ -63,7 +63,7 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 		return '-';
 	}
 
-	// find the start and end indexes of the modified word
+	// find the end of the changed word
 	while (i < newText.length && inWordChars.hasOwnProperty(newText[i])) {
 		i++;
 	}
@@ -71,30 +71,53 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 
 	var changedWordEnd = i;
 
+	// find the start of the changed word
 	while (i >= 0 && inWordChars.hasOwnProperty(newText[i])) {
 		i--;
 	}
 	i++;
 
 	var changedWordStart = i;
+	
+	var changedWord = '-'
 
-	//if (changedWordStart === changedWordEnd) {
-		//console.log('module interactor::makeSuggestionsRequestMessage(): changed word start same ' +
-				//'as end');
-		//return '-';
-	//}
+	if (changedWordStart <= changedWordEnd && 
+			(changedWordStart == 0 || newText[changedWordStart - 1] == ' ')) {
+		changedWord = newText.substring(changedWordStart, changedWordEnd + 1);
+	}
+
+	console.log(changedWordStart + ' ' + changedWordEnd);
+
+	i--;
+
+	// find the end of the previous word, if one exists
+	while (i >= 0 && !inWordChars.hasOwnProperty(newText[i])) {
+		i--;
+	}
+
+	var previousWordEnd = i;
+
+	// find the start of the previous word, if one exists
+	var previousWordStart = i;
+	while (i >= 0 && inWordChars.hasOwnProperty(newText[i])) {
+		i--;
+	}
+	i++;
+
+	var previousWordStart = i;
+
+	var previousWord = '-';
+
+	// find the previous word, if there is one
+	if (previousWordStart <= previousWordEnd && newText[previousWordEnd + 1] == ' ' &&
+			(previousWordStart == 0 || newText[previousWordStart - 1] == ' ')) {
+		previousWord = newText.substring(previousWordStart, previousWordEnd + 1);
+	}
 
 	// create suggestions request message
-	var suggestionsRequestMessage = 'rs:';
+	var suggestionsRequestMessage = 'rs:' + changedWord + ' ' + previousWord;
 
-	// add changed word to message
-	suggestionsRequestMessage += newText.substring(changedWordStart, changedWordEnd + 1);
-
-	// add previous word (word before changed word) to message
-	suggestionsRequestMessage += ' -';
-
-	suggestionsRequestMessage = suggestionsRequestMessage.toLowerCase();
-
+	//suggestionsRequestMessage = suggestionsRequestMessage.toLowerCase();
 
 	console.log('module interactor: makeSuggestionsRequestMessage() message generated: ' 
 			+ suggestionsRequestMessage);

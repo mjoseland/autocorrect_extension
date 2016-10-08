@@ -6,7 +6,8 @@ Word::Word(string word, uint32_t count, float distribution) : word_(word),
 			word_len_(word_.size()), count_(count), distribution_(distribution) {
     j_ = 0;
     current_column_ = false;
-	min_ed_ = 0;
+	//min_ed_ = 0;
+	is_correct_pspeech_ = false;
 
     ed_matrix_ = vector<vector<uint8_t>>(word_len_, vector<uint8_t>(2));
 }
@@ -29,6 +30,9 @@ uint32_t Word::getCount() {
 
 void Word::addCompareChar(char c) {
     uint8_t edit_distance;
+    uint8_t min_ed = UINT8_MAX;
+	cost_ = UINT8_MAX;
+	//uint8_t min_ed;
 	
 	uint8_t length_mismatch_penalty;	// the difference between this word's length and 
 										// that of the compare word
@@ -38,17 +42,15 @@ void Word::addCompareChar(char c) {
 		length_mismatch_penalty = (word_len_ - j_ + 1) * LEN_MISMATCH_PENALTY_MULT;
 	}
 
-    min_ed_ = UINT8_MAX;
-	cost_ = UINT8_MAX;
-
     // find ED for all elements in the column
     for (size_t i = 0; i < word_len_; i++) {
         edit_distance = get_element_ed(c, i);
 
         ed_matrix_[i][current_column_] = edit_distance;
-        min_ed_ = MIN(min_ed_, edit_distance);
+        min_ed = MIN(min_ed, edit_distance);
 
-		cost_ = MIN(cost_, min_ed_ + length_mismatch_penalty);
+		cost_ = MIN(cost_, min_ed + length_mismatch_penalty + 
+				!is_correct_pspeech_ * INCORRECT_PSPEECH_PENALTY);
     }
 
     // increment the column index and update current_column_
@@ -57,16 +59,21 @@ void Word::addCompareChar(char c) {
 
 	previous_char_ = c;
 
-	if (word_ == "help") {
-		cout << "New data in word \"help\" (j_ cost_): " << j_ << ' ' << cost_ << endl;
+	if (word_ == "jump") {
+		cout << "New data in word \"jump\" (j_ cost_): " << (int)j_ << ' ' << (int)cost_ 
+			<< endl;
 	}
+}
+
+void Word::setCorrectPspeech(bool is_correct_pspeech) {
+	is_correct_pspeech_ = is_correct_pspeech;
 }
 
 
 void Word::resetCompareWord() {
     j_ = 0;
     current_column_ = false;
-	min_ed_ = 0;
+	//min_ed_ = 0;
 	cost_ = 0;
 	previous_char_ = '*';
 }
@@ -117,11 +124,11 @@ uint8_t Word::get_element_ed(char c, size_t i) {
     if (j_ == 0) {
         // if element is the first row of the matrix: return the substitution cost * penalty
         if (i == 0) {
-            return substitution_cost * FIRST_LETTER_PENALTY;
+            return substitution_cost * FIRST_LETTER_PENALTY_MULT;
         }
 
         // if not first row: return the value of the element above + deletion cost * penalty
-        return ed_matrix_[i - 1][0] + (ins_del_cost * FIRST_LETTER_PENALTY);
+        return ed_matrix_[i - 1][0] + (ins_del_cost * FIRST_LETTER_PENALTY_MULT);
     }
 
 
@@ -149,11 +156,11 @@ uint8_t Word::min_of_three(uint8_t a, uint8_t b, uint8_t c) {
 int Word::compare_suitability(Word other_word) {
     auto other_word_cost = other_word.getCost();
 
-    if (min_ed_ < other_word_cost) {
+    if (cost_ < other_word_cost) {
         return 1;
     }
 
-    if (min_ed_ > other_word_cost) {
+    if (cost_ > other_word_cost) {
         return -1;
     }
 
@@ -169,3 +176,5 @@ int Word::compare_suitability(Word other_word) {
 
     return 0;
 }
+
+
