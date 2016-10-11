@@ -72,12 +72,6 @@
 
 import re
 
-# advanced personnel management
-# level 4, 49 sherwood road, toowong 1300 276 456
-# 3:15 wednesday
-
-# rent form and lease
-
 MIN_COUNT = 40
 IN_FILE_NAME = "ucrel_word_list.txt"
 NGRAMS_FILE_NAME = "ngrams_top_50000.txt"
