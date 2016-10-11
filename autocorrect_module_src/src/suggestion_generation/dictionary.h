@@ -31,8 +31,8 @@ using namespace std;
 // Parts of speech	(* = no words currently)
 // pspeech str  	 description
 //		0  Verb      verb, default? (jump, study)
-//		1  VerbUs    verb, only after third-person singular noun (sails)   - Us = unnamed "s"
-//		2  VerbPa    verb, past tense (sailed, written, withdrawn)
+//		1  VerbTPP   verb, third-person present (sails)
+//		2  VerbPa    verb, past tense (incl. participle) (sailed, had, rode, ridden)
 //		3  VerbGe    verb/gerund, research on usage rules (sailing)
 //		4  NoC       common noun (island, ship)
 //		5  NoCPl     common noun, plural (islands, dogs)
@@ -45,7 +45,7 @@ using namespace std;
 //		12 VMod		 verb modifier/helper (should, might, could)
 //		13 DetP      (enough, latter, what)
 //		14 Prep      preposition (beyond, according, in)
-//		15 Pron      pronoun (she, hers)
+//		15 Pron      pronoun (she, hers, someone, they)
 //		16 Conj      conjunction (and, but, if)
 //		17 Int       interjection (yikes, uh-oh)
 //		18 Fore      *???									- possibly delete, not common
@@ -105,6 +105,9 @@ private:
 
 
 	uint8_t get_pspeech(string word);
+	// returns true if a word is currently in the list of closest words in any form.
+	// 		return true if word = "jump" and "jump" is already in the list
+	bool in_closest_words(string word_str);
 };
 
 

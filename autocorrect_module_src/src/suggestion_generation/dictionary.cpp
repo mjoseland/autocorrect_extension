@@ -1,9 +1,7 @@
 #include "dictionary.h"
 
-#include <iostream>
-//TODO: remove
+#include <iostream>	// TODO remove
 
-/* PUBLIC */
 
 Dictionary::Dictionary() {
 	constructPspeechMap();
@@ -59,12 +57,9 @@ void Dictionary::addCompareChar(char c, string &previous_word) {
 		updatePspeechPenalties();
 	}
 		
-
-	// TODO: special handling for previous words not, to
-
     closest_word_indexes_.clear();
 
-	Word *min_closest_word;
+	Word *min_closest_word;// = nullptr;
 
     size_t n;			// the number of words in a part of speech vector
 	Word *word_ptr; 
@@ -85,7 +80,7 @@ void Dictionary::addCompareChar(char c, string &previous_word) {
 			word_ptr->addCompareChar(c);
 
 			// if the word should be added as a new closest word, do so 
-			if (word_ptr->getCost() <= MAX_ED &&
+			if (word_ptr->getCost() <= MAX_ED && !in_closest_words(word_ptr->getWord()) &&
 						 (closest_word_indexes_.size() < CLOSEST_WORDS_N ||
 						 min_closest_word == nullptr || 		//TODO: remove line
 						 *word_ptr > *min_closest_word)) {
@@ -151,7 +146,7 @@ void Dictionary::insertNewClosestWordIndex(size_t new_i, size_t new_j) {
 
 void Dictionary::constructPspeechMap() {
 	pspeech_map_.emplace(make_pair("Verb", 0));
-	pspeech_map_.emplace(make_pair("VerbUs", 1));
+	pspeech_map_.emplace(make_pair("VerbTPP", 1));
 	pspeech_map_.emplace(make_pair("VerbPa", 2));
 	pspeech_map_.emplace(make_pair("VerbGe", 3));
 	pspeech_map_.emplace(make_pair("NoC", 4));
@@ -176,7 +171,9 @@ void Dictionary::constructPspeechMap() {
 	pspeech_map_.emplace(make_pair("Uncl", UNCL_PSPEECH_INDEX));
 }
 
-// TODO: review
+// TODO: review 
+// 		could -> problem, problems are first suggestion
+//		my -> home doesn't suggest home
 void Dictionary::constructPspeechOrderVector() {
 	pspeech_order_vector_ = 
 		vector<vector<bool>>(PSPEECH_COUNT, vector<bool>(PSPEECH_COUNT, false));
@@ -189,8 +186,8 @@ void Dictionary::constructPspeechOrderVector() {
 	pspeech_str_orders[pspeech_map_["Verb"]] = {"NoCPl", "NoPPl", "Adv", "Adj",
 			"Pron", "Prep", "Conj", "Det", "Num", "Inf", "Neg"};
 
-	// VerbUs
-	pspeech_str_orders[pspeech_map_["VerbUs"]] = {"NoC", "NoP", "Adv", "Adj", "DetP", "Prep",
+	// VerbTPP
+	pspeech_str_orders[pspeech_map_["VerbTPP"]] = {"NoC", "NoP", "Adv", "Adj", "DetP", "Prep",
 		"Pron", "Conj", "Int", "Det", "Num", "Inf", "Neg"};
 
 	// VerbPa
@@ -203,20 +200,20 @@ void Dictionary::constructPspeechOrderVector() {
 		"NoPPo", "Adv", "DetP", "Prep", "Conj", "Det", "Num", "Neg"};
 
 	// NoC
-	pspeech_str_orders[pspeech_map_["NoC"]] = {"VerbUs", "VerbPa", "VerbGe", "NoC", "NoCPl", 
+	pspeech_str_orders[pspeech_map_["NoC"]] = {"VerbTPP", "VerbPa", "VerbGe", "NoC", "NoCPl", 
 		"NoP", "NoPPl", "VMod", "Adv", "Adj", "DetP", "Prep", "Pron", "Conj", "Det", "Num", 
-		"Inf", "Neg"};
+		"Neg"};
 
 	// NoCPl
 	pspeech_str_orders[pspeech_map_["NoCPl"]] = {"VerbPa", "VerbGe", "NoCPl", "NoP", "Adv", 
 			"Adj", "VMod", "DetP", "Prep", "Pron", "Conj", "Det", "Num", "Inf", "Neg"};
 
 	// NoCPo
-	pspeech_str_orders[pspeech_map_["NoCPo"]] = {"VerbUs", "VerbPa", "NoC", "NoCPl", "NoP", 
+	pspeech_str_orders[pspeech_map_["NoCPo"]] = {"VerbTPP", "VerbPa", "NoC", "NoCPl", "NoP", 
 		"NoPPl", "Adj", "DetP", "Det", "Num", "Inf", "Neg"};
 
 	// NoP
-	pspeech_str_orders[pspeech_map_["NoP"]] = {"VerbUs", "VerbPa", "VerbGe", "NoC", "NoCPl", 
+	pspeech_str_orders[pspeech_map_["NoP"]] = {"VerbTPP", "VerbPa", "VerbGe", "NoC", "NoCPl", 
 		"NoP", "NoPPl", "VMod", "Adv", "Adj", "DetP", "Prep", "Pron", "Conj", "Det", "Num", 
 		"Inf", "Neg"};
 
@@ -225,16 +222,16 @@ void Dictionary::constructPspeechOrderVector() {
 			"Adj", "VMod", "DetP", "Prep", "Pron", "Conj", "Det", "Num", "Inf", "Neg"};
 
 	// NoPPo
-	pspeech_str_orders[pspeech_map_["NoPPo"]] = {"VerbUs", "VerbPa", "NoC", "NoCPl", "NoP", 
+	pspeech_str_orders[pspeech_map_["NoPPo"]] = {"VerbTPP", "VerbPa", "NoC", "NoCPl", "NoP", 
 		"NoPPl", "Adj", "DetP", "Det", "Num", "Inf", "Neg"};
 
 	// Adv
-	pspeech_str_orders[pspeech_map_["Adv"]] = {"Verb", "VerbUs", "VerbPa", "VerbGe", "VMod", 
+	pspeech_str_orders[pspeech_map_["Adv"]] = {"Verb", "VerbTPP", "VerbPa", "VerbGe", "VMod", 
 		"Conj", "Det", "Num", "Inf", "Neg"};
 
 	// Adj
 	pspeech_str_orders[pspeech_map_["Adj"]] = {"NoC", "NoCPl", "NoCPo", "NoP", 
-		"NoPPl", "Adj", "DetP", "Det", "Conj", "Inf", "Neg"};
+		"NoPPl", "NoPPo", "Adj", "DetP", "Det", "Conj", "Neg"};
 
 	// VMod
 	pspeech_str_orders[pspeech_map_["VMod"]] = {"Verb", "NoC", "NoCPl", "NoCPo", "NoP", 
@@ -254,7 +251,7 @@ void Dictionary::constructPspeechOrderVector() {
 		"Inf", "Neg"};
 
 	// Conj
-	pspeech_str_orders[pspeech_map_["Conj"]] = {"Verb", "VerbUs", "VerbPa", "VerbGe", "NoC", 
+	pspeech_str_orders[pspeech_map_["Conj"]] = {"Verb", "VerbTPP", "VerbPa", "VerbGe", "NoC", 
 		"NoCPl", "NoCPo", "NoP", "NoPPl", "NoCPo", "Adv", "Adj", "VMod", "DetP", "Prep", 
 		"Pron", "Num", "Inf", "Neg"};
 
@@ -318,8 +315,6 @@ void Dictionary::updatePspeechPenalties() {
 
 	cout << endl;
 
-	cout << "CPV: ";		// TODO delete
-
 	for (size_t i = 0; i < PSPEECH_COUNT; i++) {
 		// if there is a mismatch in the new and old correct pspeech order, update the
 		// correctness of the part of speech of all required words
@@ -330,11 +325,7 @@ void Dictionary::updatePspeechPenalties() {
 
 			correct_pspeech_vector_[i] = new_correct_pspeech_vector[i];
 		}
-
-		cout << correct_pspeech_vector_[i] << ' ';
 	}
-
-	cout << endl;
 }
 
 
@@ -354,4 +345,14 @@ uint8_t Dictionary::get_pspeech(string word) {
 		pspeech << endl;
 
 	return pspeech;
+}
+
+bool Dictionary::in_closest_words(string word_str) {
+	for (auto close_word_index: closest_word_indexes_) {
+		if (words_[close_word_index.first][close_word_index.second].getWord() == word_str) {
+			return true;
+		}
+	}
+	
+	return false;
 }
