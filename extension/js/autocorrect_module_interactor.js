@@ -1,9 +1,6 @@
 autocorrectModule = null;  // Global application object.
 statusText = 'NO-STATUS';
 
-// a list of all current suggestions (empty when no suggestions are required)
-//var suggestions = new Array();	
-
 // a list of all text areas on the page
 var textareaList = new Array();
 
@@ -18,33 +15,33 @@ var inWordCharsStr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\'-'
 // at the correct position in the page
 var currentTextArea;
 
-var keyUpTime;
-var receivedMessageTime;
 var moduleInitialised = false;
 var wordResourceFile = 'resources/word_list.txt';
 
+var onTestPage = false;
+
 // sets the displayed suggestions on the test page
-// suggestionsStr format: [word1] [word2] [word3] ...
+// 		suggestionsStr format: [word1] [word2] [word3] ...
+// 		suggestionsStr = '-' will clear suggestions
 function setSuggestions(suggestionsStr) {
-	document.getElementById('suggestions').innerHTML = 'words: ' + suggestionsStr;
+
+	// if js is on a test page, update it
+	if (onTestPage) {
+		testPage.printSuggestions(suggestionsStr);
+
+		if (suggestionsStr != '-') {
+			testPage.printTimeTaken();
+		} else {
+			testPage.clearTimeTaken();
+		}
+	}
 }
 
-function setTimeTaken() {
-	document.getElementById('time_taken').innerHTML = 'time: ' + 
-		(receivedMessageTime - keyUpTime) + 'ms';
-}
-
-function clearSuggestions() {
-	setSuggestions('-');
-	document.getElementById('time_taken').innerHTML = 'time: -';
-
-}
-
-
-// TODO: ensure only one word has been changed, implement word_before_changed_word
+// TODO ensure only one word has been changed
+// 		handle users pressing multiple keys quickly
 //
 // makes a new suggestion request message based on the new and old text in a textarea
-// message format: rs:[changed_word] [word_before_changed_word]
+// 		message format: rs:[changed_word] [word_before_changed_word]
 // edge cases:
 // 		no word, comma, or period before: send message "rs:[changed_word] -"
 // 		change spans multiple words (eg. paste): no message sent, suggestions cleared
@@ -129,11 +126,10 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 // event handler for a change in any text area, locates the change and requests new suggestions
 // from the NaCL module if required
 function handleTextAreaChange(changedTextareaIndex) {
-	console.log('module interactor: handleTextAreaChange(): TA changed');
+	console.log('module interactor: handleTextAreaChange(): textarea changed');
 
-	currentTextarea = textareaList[changedTextareaIndex];
 	var oldText = textareaOldValues[changedTextareaIndex];
-	var newText = currentTextarea.value;
+	var newText = textareaList[changedTextareaIndex].value;
 	textareaOldValues[changedTextareaIndex] = newText;
 
 	suggestionsRequestMessage = makeSuggestionsRequestMessage(newText, oldText);
@@ -142,14 +138,18 @@ function handleTextAreaChange(changedTextareaIndex) {
 	if (suggestionsRequestMessage != '-') {
 		autocorrectModule.postMessage(suggestionsRequestMessage);
 	} else {
-		clearSuggestions();
+		setSuggestions('-');
 	}
 
 }
 
 function handleKeyUp() {
+	// if js is on test page, set its keyUpTime
+	if (onTestPage) {
+		testPage.setKeyUpTime(new Date().getTime());
+	}
+
 	// iterate through all original text areas on the page
-	keyUpTime = new Date().getTime();
 	for (var i = 0; i < textareaList.length; i++) {
 		// if the text area is the active element
 		if (textareaList[i] === document.activeElement) {
@@ -157,7 +157,6 @@ function handleKeyUp() {
 			if (textareaList[i].value != textareaOldValues[i]) {
 				handleTextAreaChange(i);
 			}
-
 
 			break;
 		}
@@ -179,7 +178,8 @@ function sendWordsToModule(){
         if (httpRequest.readyState === 4 && httpRequest.status === 200) {
 			autocorrectModule.postMessage('wl:' + httpRequest.responseText);
         } else {
-			console.log('module interactor: sendWordsToModule(): request or status not ready');
+			console.log('module interactor: sendWordsToModule(): request or status not' +
+																				' ready');
 		}
     }
 }
@@ -188,10 +188,15 @@ function sendWordsToModule(){
 function moduleDidLoad() {
   	autocorrectModule = document.getElementById('autocorrect_module');
 
+	if (testPage != undefined) {
+		onTestPage = true;
+	}
+
+	// check if jQuery has been loaded
  	if (typeof jQuery == 'undefined') {
-		console.log('module interactor: moduleDidLoad(): JQ not loaded');
+		console.log('module interactor: moduleDidLoad(): jQuery not loaded');
 	} else {
-		console.log('module interactor: moduleDidLoad(): JQ loaded');
+		console.log('module interactor: moduleDidLoad(): jQuery loaded');
 	} 
 
 	// find all text areas and save current values to textareaOldValues
@@ -201,8 +206,10 @@ function moduleDidLoad() {
 		textareaOldValues.push(textareaList[i].value);
 	}
 
-	console.log('module interactor: moduleDidLoad(): ' + textareaList.length + ' text areas found');
+	console.log('module interactor: moduleDidLoad(): ' + textareaList.length + 
+																		' text areas found');
 
+	// set handleKeyUp to be called ok keyup event
 	window.onkeyup = handleKeyUp;
 
 	// add all chars that are considered to be part of a word
@@ -221,11 +228,11 @@ function handleMessage(messageEvent) {
 	var receivedMessage = messageEvent.data;
 	console.log('module interactor: handleMessage() received: ' + receivedMessage);
 
-	// set time taken element
-	receivedMessageTime = new Date().getTime();
-	setTimeTaken();
+	// if js is for a test page, set time taken element
+	if (onTestPage) {
+		testPage.setMessageReceivedTime(new Date().getTime());
+	}
 
-	
 	// ns: new suggestions
 	if (receivedMessage.substring(0, 2) === 'ns') {
 		setSuggestions(receivedMessage.substring(3));
@@ -248,14 +255,14 @@ function handleMessage(messageEvent) {
 //
 // event handler for new page load, may want ot migrate textarea scanning to this function
 function pageDidLoad() {
-	console.log('module interactor: pageDidLoad(): Page loaded');
+	console.log('module interactor: pageDidLoad(): page loaded');
 }
 
 // TODO: delete if not useful
 //
 // updates the status of the NaCL module
-function updateStatus(new_status) {
-  	if (new_status)
-		statusText = new_status;
-}
+//function updateStatus(new_status) {
+  	//if (new_status)
+		//statusText = new_status;
+//}
 

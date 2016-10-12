@@ -10,32 +10,31 @@
     </style>
 
     <script src="js/jquery-3.1.0.min.js"></script>
+    <script src="js/test.js"></script>
     <script src="js/autocorrect_module_interactor.js"></script>
 	<!--<div id="status"></div>-->
   </head>
 
   <body>
 
-	  <h1>Autocorrect Module Testing Page</h1>
+	  <h1>Test Page</h1>
 
 	  <p>
-  
-      <textarea name="test_text_area" rows="8" cols="80"></textarea><br>
+        <textarea name="test_text_area" rows="8" cols="80"></textarea><br>
+      </p>
       
       <p id="suggestions">words:</p>
 	  <p id="time_taken">time:</p>
 
+      <div id="listener">
+        <script src="js/module_loader.js"></script>
 
-		<div id="listener">
-		  <script src="js/module_loader.js"></script>
-
-		  <embed id="autocorrect_module"
-				 width=0 height=0
-				 src="autocorrect_module/autocorrect_module.nmf"
-				 type="application/x-pnacl" />
-		</div>
+        <embed id="autocorrect_module"
+               width=0 height=0
+               src="autocorrect_module/autocorrect_module.nmf"
+               type="application/x-pnacl" />
+      </div>
 		  
-	  </p>
   </body>
 </html>
 
