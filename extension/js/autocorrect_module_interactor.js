@@ -1,11 +1,8 @@
-autocorrectModule = null;  // Global application object.
+autocorrectModule = null;  // autocorrect native client module
 statusText = 'NO-STATUS';
 
 // a list of all text areas on the page
-var textareaList = new Array();
-
-// dictionary, maps text areas to previous value (string in area)
-var textareaOldValues = new Array();
+var inputElements = new Array();
 
 // set (built from string) of all words that are considered to be part of a word
 var inWordChars = {};
@@ -18,12 +15,18 @@ var currentTextArea;
 var moduleInitialised = false;
 var wordResourceFile = 'resources/word_list.txt';
 
+//var getCaretCoordinates = require('textarea-caret');
+
+// TODO console.log only if onTestPage is true
+// true if suggestions are being generated for the test page
 var onTestPage = false;
 
 // sets the displayed suggestions on the test page
 // 		suggestionsStr format: [word1] [word2] [word3] ...
 // 		suggestionsStr = '-' will clear suggestions
 function setSuggestions(suggestionsStr) {
+
+	//console.log()
 
 	// if js is on a test page, update it
 	if (onTestPage) {
@@ -39,6 +42,7 @@ function setSuggestions(suggestionsStr) {
 
 // TODO ensure only one word has been changed
 // 		handle users pressing multiple keys quickly
+// 		handle new lines correctly
 //
 // makes a new suggestion request message based on the new and old text in a textarea
 // 		message format: rs:[changed_word] [word_before_changed_word]
@@ -83,8 +87,6 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 		changedWord = newText.substring(changedWordStart, changedWordEnd + 1);
 	}
 
-	console.log(changedWordStart + ' ' + changedWordEnd);
-
 	i--;
 
 	// find the end of the previous word, if one exists
@@ -126,11 +128,16 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 // event handler for a change in any text area, locates the change and requests new suggestions
 // from the NaCL module if required
 function handleTextAreaChange(changedTextareaIndex) {
+	// if js is on test page, set its keyUpTime
+	if (onTestPage) {
+		testPage.setKeyUpTime(new Date().getTime());
+	}
+
 	console.log('module interactor: handleTextAreaChange(): textarea changed');
 
-	var oldText = textareaOldValues[changedTextareaIndex];
-	var newText = textareaList[changedTextareaIndex].value;
-	textareaOldValues[changedTextareaIndex] = newText;
+	var oldText = inputElements[changedTextareaIndex].getOldValue();
+	var newText = inputElements[changedTextareaIndex].getValue();
+	inputElements[changedTextareaIndex].setOldValueToCurrent();
 
 	suggestionsRequestMessage = makeSuggestionsRequestMessage(newText, oldText);
 
@@ -144,17 +151,19 @@ function handleTextAreaChange(changedTextareaIndex) {
 }
 
 function handleKeyUp() {
-	// if js is on test page, set its keyUpTime
-	if (onTestPage) {
-		testPage.setKeyUpTime(new Date().getTime());
-	}
+	//var coordinates = getCaretCoordinates(this, this.selectionEnd);
+	//
+	console.log(inputElements.length);
+
+	//console.log('module interactor: handleTextAreaChange(): coordinates: ' + coordinates.top + 
+			//' ' + coordinates.left);
 
 	// iterate through all original text areas on the page
-	for (var i = 0; i < textareaList.length; i++) {
+	for (var i = 0; i < inputElements.length; i++) {
 		// if the text area is the active element
-		if (textareaList[i] === document.activeElement) {
+		if (inputElements[i].isActiveElement()) {
 			// if the text area's value has changed, handle the change
-			if (textareaList[i].value != textareaOldValues[i]) {
+			if (inputElements[i].hasUnhandledChange()) {
 				handleTextAreaChange(i);
 			}
 
@@ -184,6 +193,38 @@ function sendWordsToModule(){
     }
 }
 
+// safe wrapper for HTMLTextAreaElement or HTMLInputElement
+function TextInputElement(baseElement) {
+	this.getValue = function() {
+		return baseElement.value;
+	}
+
+	this.addEventListener = function(event, handler) {
+		element.addEventListener(event, handler);
+	}
+
+	this.isActiveElement = function(event, handler) {
+		return (element === document.activeElement);
+	}
+
+	this.setOldValueToCurrent = function() {
+		oldValue = this.getValue();
+	}
+
+	this.getOldValue = function() {
+		return oldValue;
+	}
+
+	this.hasUnhandledChange = function() {
+		return !(oldValue === element.value);
+	}
+
+	var element = baseElement;
+	var oldValue = this.getValue();
+}
+
+// TODO ensure the initialisation doesn't happen twice. currently inputTAs are added twice
+//
 // called on module load
 function moduleDidLoad() {
   	autocorrectModule = document.getElementById('autocorrect_module');
@@ -192,25 +233,22 @@ function moduleDidLoad() {
 		onTestPage = true;
 	}
 
-	// check if jQuery has been loaded
- 	if (typeof jQuery == 'undefined') {
-		console.log('module interactor: moduleDidLoad(): jQuery not loaded');
-	} else {
-		console.log('module interactor: moduleDidLoad(): jQuery loaded');
-	} 
+  	['input[type="text"]', 'textarea'].forEach(function (selector) {
+		var inputBaseElement = document.querySelector(selector);
 
-	// find all text areas and save current values to textareaOldValues
-	textareaList = document.getElementsByTagName('textarea');
+		inputElements.push(new TextInputElement(inputBaseElement));
 
-	for (var i = 0; i < textareaList.length; i++) {
-		textareaOldValues.push(textareaList[i].value);
-	}
+		['keyup', 'click', 'scroll'].forEach(function (event) {
+		 	inputElements[inputElements.length - 1].addEventListener(event, handleKeyUp);
+		});
+  	});
+	
+	console.log('module interactor: moduleDidLoad(): ' + inputElements.length + 
+			' text input elements found');
 
-	console.log('module interactor: moduleDidLoad(): ' + textareaList.length + 
-																		' text areas found');
 
 	// set handleKeyUp to be called ok keyup event
-	window.onkeyup = handleKeyUp;
+	//window.onkeyup = handleKeyUp;
 
 	// add all chars that are considered to be part of a word
 	for (var i = 0; i < inWordCharsStr.length; i++) {

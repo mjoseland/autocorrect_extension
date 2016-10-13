@@ -9,8 +9,9 @@
       }
     </style>
 
-    <script src="js/jquery-3.1.0.min.js"></script>
+    <!--<script src="js/jquery-3.1.0.min.js"></script>-->
     <script src="js/test.js"></script>
+    <!--<script src="js/textarea-caret-position-master/index.js"></script>-->
     <script src="js/autocorrect_module_interactor.js"></script>
 	<!--<div id="status"></div>-->
   </head>
@@ -20,11 +21,16 @@
 	  <h1>Test Page</h1>
 
 	  <p>
+        textarea <br>
         <textarea name="test_text_area" rows="8" cols="80"></textarea><br>
+        
+        input type="text" <br>
+        <input type="text" size="15" maxlength="240" rows="8" cols="80"> <br>
+        
       </p>
       
-      <p id="suggestions">words:</p>
-	  <p id="time_taken">time:</p>
+      <p id="suggestions">words: -</p>
+	  <p id="time_taken">time: -</p>
 
       <div id="listener">
         <script src="js/module_loader.js"></script>

@@ -5,11 +5,6 @@ function TestPage() {
 	var keyUpTime;
 	var messageReceivedTime;
 
-	//constructor() {
-		//keyUpTime = 0;
-		//messageReceivedTime = 0;
-	//}
-
 	// displays the suggestions under the textarea on the test page
 	this.printSuggestions = function(suggestionsStr) {
 		document.getElementById('suggestions').innerHTML = 'words: ' + suggestionsStr;
