@@ -16,33 +16,100 @@ var moduleInitialised = false;
 var wordResourceFile = 'resources/word_list.txt';
 
 //var getCaretCoordinates = require('textarea-caret');
+var coordinates;
 
 // TODO console.log only if onTestPage is true
 // true if suggestions are being generated for the test page
 var onTestPage = false;
 
+// removes all autocorrect_suggestions elements
+function removeSuggestionsElements() {
+	var suggestionsElements = document.getElementsByClassName("autocorrect_suggestions");
+
+	for (var i = 0; i < suggestionsElements.length; i++) {
+		suggestionsElements[i].parentElement.removeChild(suggestionsElements[i]);
+	}
+}
+
+function updateCoordinates(inputElementIndex) {
+	var baseElement = inputElements[inputElementIndex].getBaseElement();
+
+	coordinates = getCaretCoordinates(baseElement, baseElement.selectionEnd);
+
+	var fontSize = parseFloat(
+			window.getComputedStyle(baseElement, null).getPropertyValue('font-size'));
+
+	fontSize += fontSize / 3;
+
+	coordinates.top += baseElement.offsetTop - baseElement.scrollTop + fontSize;
+	coordinates.left += baseElement.offsetLeft - baseElement.scrollLeft;
+
+	console.log('updateCareCoordinates(): ' + coordinates.top + ' ' + coordinates.left);
+}
+
+function createSuggestionsElement(suggestionsStr) {
+	// remove all autocorrect_suggestions elements
+	removeSuggestionsElements();
+
+	if (coordinates == null) {
+		updateCoordinates();
+	}
+
+	//console.log('TEST: ' + coordinates.top + ' ' + coordinates.left);
+
+	// create new autocorrect_suggestions element
+    var elementStr = '<div class="autocorrect_suggestions"><table>\n';
+
+	var suggestedWords = suggestionsStr.split(" ");
+	for (var i = 0; i < suggestedWords.length - 1; i++) {
+		elementStr += '<tr><td>' + suggestedWords[i] + '</td></tr>\n';
+	}
+	elementStr += '<tr><td>' + suggestedWords[suggestedWords.length - 1] + '</td></tr>\n';
+
+	elementStr += '</table></div>\n';
+
+    var suggestionsElement = document.createElement('div');
+    suggestionsElement.innerHTML = elementStr;
+
+	console.log(elementStr);
+
+	// add element to document
+   	document.body.appendChild(suggestionsElement.firstChild);
+
+	// set offset of new element (for some reason this needs to be done after adding
+	suggestionsElements = document.getElementsByClassName("autocorrect_suggestions");
+	suggestionsElements[0].style.top = coordinates.top + "px";
+	suggestionsElements[0].style.left = coordinates.left + "px";
+}
+
 // sets the displayed suggestions on the test page
 // 		suggestionsStr format: [word1] [word2] [word3] ...
 // 		suggestionsStr = '-' will clear suggestions
 function setSuggestions(suggestionsStr) {
-
-	//console.log()
-
 	// if js is on a test page, update it
 	if (onTestPage) {
 		testPage.printSuggestions(suggestionsStr);
 
-		if (suggestionsStr != '-') {
-			testPage.printTimeTaken();
-		} else {
+		if (suggestionsStr == '-') {
 			testPage.clearTimeTaken();
+		} else {
+			testPage.printTimeTaken();
 		}
 	}
+
+	if (suggestionsStr == '-') {
+		removeSuggestionsElements();
+	} else {
+		createSuggestionsElement(suggestionsStr);
+	}
+
 }
 
 // TODO ensure only one word has been changed
 // 		handle users pressing multiple keys quickly
 // 		handle new lines correctly
+// 		hash previously retrieved suggestions (limit size/bloat)
+// 		typing symbol+char results in a small box (no suggestions should be none displayed)
 //
 // makes a new suggestion request message based on the new and old text in a textarea
 // 		message format: rs:[changed_word] [word_before_changed_word]
@@ -59,8 +126,8 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 	while (--i >= 0 && --j >= 0 && newText[i] == oldText[j]);
 
 	if (!inWordChars.hasOwnProperty(newText[i])) {
-		console.log('module interactor::makeSuggestionsRequestMessage(): last modified char ' +
-				'is non-word char \'' + newText[i] + '\'');
+		console.log('makeSuggestionsRequestMessage(): last modified char is non-char \'' +
+				newText[i] + '\'');
 		return '-';
 	}
 
@@ -118,26 +185,27 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 
 	//suggestionsRequestMessage = suggestionsRequestMessage.toLowerCase();
 
-	console.log('module interactor: makeSuggestionsRequestMessage() message generated: ' 
-			+ suggestionsRequestMessage);
+	console.log('makeSuggestionsRequestMessage() message generated: ' +
+			suggestionsRequestMessage);
 
 	return suggestionsRequestMessage;
 }
 
 
-// event handler for a change in any text area, locates the change and requests new suggestions
-// from the NaCL module if required
-function handleTextAreaChange(changedTextareaIndex) {
+// event handler for a change in any text area, locates the change and requests new 
+// suggestions from the NaCL module if required
+// 		inputElementIndex 	the index of the input element that was changed
+function handleTextAreaChange(inputElementIndex) {
 	// if js is on test page, set its keyUpTime
 	if (onTestPage) {
 		testPage.setKeyUpTime(new Date().getTime());
 	}
 
-	console.log('module interactor: handleTextAreaChange(): textarea changed');
+	console.log('handleTextAreaChange(): textarea changed');
 
-	var oldText = inputElements[changedTextareaIndex].getOldValue();
-	var newText = inputElements[changedTextareaIndex].getValue();
-	inputElements[changedTextareaIndex].setOldValueToCurrent();
+	var oldText = inputElements[inputElementIndex].getOldValue();
+	var newText = inputElements[inputElementIndex].getValue();
+	inputElements[inputElementIndex].setOldValueToCurrent();
 
 	suggestionsRequestMessage = makeSuggestionsRequestMessage(newText, oldText);
 
@@ -145,25 +213,33 @@ function handleTextAreaChange(changedTextareaIndex) {
 	if (suggestionsRequestMessage != '-') {
 		autocorrectModule.postMessage(suggestionsRequestMessage);
 	} else {
+		console.log("GH");
 		setSuggestions('-');
+		updateCoordinates(inputElementIndex);
 	}
 
 }
 
-function handleKeyUp() {
+function handleInputEvent() {
 	//var coordinates = getCaretCoordinates(this, this.selectionEnd);
 	//
-	console.log(inputElements.length);
+	//console.log(inputElements.length);
 
-	//console.log('module interactor: handleTextAreaChange(): coordinates: ' + coordinates.top + 
+	//console.log('handleTextAreaChange(): coordinates: ' + coordinates.top + 
 			//' ' + coordinates.left);
 
 	// iterate through all original text areas on the page
 	for (var i = 0; i < inputElements.length; i++) {
 		// if the text area is the active element
 		if (inputElements[i].isActiveElement()) {
+			if (inputElements[i].getValue() == '') {
+				updateCoordinates(i);
+				break;
+			}
+			
 			// if the text area's value has changed, handle the change
 			if (inputElements[i].hasUnhandledChange()) {
+			//if (this.hasUnhandledChange()) {
 				handleTextAreaChange(i);
 			}
 
@@ -187,8 +263,7 @@ function sendWordsToModule(){
         if (httpRequest.readyState === 4 && httpRequest.status === 200) {
 			autocorrectModule.postMessage('wl:' + httpRequest.responseText);
         } else {
-			console.log('module interactor: sendWordsToModule(): request or status not' +
-																				' ready');
+			console.log('sendWordsToModule(): request or status not ready');
 		}
     }
 }
@@ -219,8 +294,85 @@ function TextInputElement(baseElement) {
 		return !(oldValue === element.value);
 	}
 
+	this.getBaseElement = function() {
+		return baseElement;
+	}
+
 	var element = baseElement;
 	var oldValue = this.getValue();
+}
+
+function addCss() {
+	// 		     font	 		     fill			 	 hover-fill			 border
+	// grey
+	var grey  = ['rgb(015,015,015)', 'rgb(230,230,230)', 'rgb(250,250,250)', 'rgb(015,015,015)'];
+	// blue
+	var blue1 = ['rgb(031,112,149)', 'rgb(252,252,252)', 'rgb(236,236,236)', 'rgb(016,075,135)'];
+	// blue w/ light border
+	var blue2 = ['rgb(031,112,149)', 'rgb(250,250,250)', 'rgb(236,236,236)', 'rgb(199,199,199)'];
+	
+	var segoe = '"Segoe UI", "Lucida Grande", Tahoma, sans-serif';
+	var arial = 'Arial, Helvetica, sans-serif';
+	var lucinda = '"Lucida Sans Unicode", "Lucida Grande", sans-serif';
+
+	//		      font    tab-border   row-border   h-padding   v-padding
+	var table  = ['14px', '1px',       '1px',       '1px',		'1px'];
+	var box    = ['14px', '1px',       '0px',       '1px',		'1px'];
+	var spaced = ['14px', '1px',       '1px',       '2px',		'2px'];
+
+
+	// *** USE PRESET SCHEMES HERE *** //
+	var fontFamily = lucinda;
+	var colors = blue2;
+	var layout = table;
+	// *** *** *** *** *** *** *** *** //
+
+
+	// add css for suggestions div
+	var suggestionsCss = document.createElement("style");
+	suggestionsCss.type = "text/css";
+
+	// add div CSS
+	suggestionsCss.innerHTML = 
+		'.autocorrect_suggestions { \n\
+			position: absolute; \n\
+			z-index: 1000; \n\
+		} \n'
+
+	// add table CSS
+	suggestionsCss.innerHTML += 
+		'.autocorrect_suggestions table { \n\
+			border-collapse: collapse; \n\
+    		border: solid ' + layout[1] + '; \n\
+			\
+			font-size: ' + layout[0] + '; \n\
+        	font-family: ' + fontFamily + '; \n\
+			\
+			background-color:' +  colors[1] + '; \n\
+			border-color:' +  colors[3] + '; \n\
+		} \n';
+
+	// add row CSS
+	suggestionsCss.innerHTML += 
+		'.autcorrect_suggestions th, td { \n\
+    		border: solid ' + layout[2] + '; \n\
+			padding-top: ' + layout[4] + '; \n\
+			padding-bottom: ' + layout[4] + '; \n\
+			padding-left: ' + layout[3] + '; \n\
+			padding-right: ' + layout[3] + '; \n\
+			\
+			color:' +  colors[0] + '; \n\
+			border-color:' +  colors[3] + '; \n\
+		} \n';
+
+	// add hover CSS
+	suggestionsCss.innerHTML += 
+		'.autocorrect_suggestions tr:hover { \n\
+			background-color:' +  colors[2] + '; \n\
+		} \n';
+
+	// append css to document header
+	document.head.appendChild(suggestionsCss);
 }
 
 // TODO ensure the initialisation doesn't happen twice. currently inputTAs are added twice
@@ -233,17 +385,22 @@ function moduleDidLoad() {
 		onTestPage = true;
 	}
 
+	addCss();
+
+	// create suggestions element
+    fragment = document.createDocumentFragment();
+
   	['input[type="text"]', 'textarea'].forEach(function (selector) {
 		var inputBaseElement = document.querySelector(selector);
 
 		inputElements.push(new TextInputElement(inputBaseElement));
 
 		['keyup', 'click', 'scroll'].forEach(function (event) {
-		 	inputElements[inputElements.length - 1].addEventListener(event, handleKeyUp);
+		 	inputElements[inputElements.length - 1].addEventListener(event, handleInputEvent);
 		});
   	});
 	
-	console.log('module interactor: moduleDidLoad(): ' + inputElements.length + 
+	console.log('moduleDidLoad(): ' + inputElements.length + 
 			' text input elements found');
 
 
@@ -264,7 +421,7 @@ function moduleDidLoad() {
 // 		new suggestions: ns:[word1] [word2] [word3]		(count of words may vary)
 function handleMessage(messageEvent) {
 	var receivedMessage = messageEvent.data;
-	console.log('module interactor: handleMessage() received: ' + receivedMessage);
+	console.log('handleMessage() received: ' + receivedMessage);
 
 	// if js is for a test page, set time taken element
 	if (onTestPage) {
@@ -293,7 +450,7 @@ function handleMessage(messageEvent) {
 //
 // event handler for new page load, may want ot migrate textarea scanning to this function
 function pageDidLoad() {
-	console.log('module interactor: pageDidLoad(): page loaded');
+	console.log('pageDidLoad(): page loaded');
 }
 
 // TODO: delete if not useful
