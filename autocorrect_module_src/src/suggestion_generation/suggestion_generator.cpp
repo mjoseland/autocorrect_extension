@@ -9,9 +9,11 @@ SuggestionGenerator::SuggestionGenerator() {
 	previous_word_ = '-';
 }
 
+// TODO handle capitalisation properly
+// 		ie.: asdf -> Pfeiffer's Pfeiffers Pfeiffer Microsoft's Macdonald's
 string SuggestionGenerator::getSuggestions(string modified_word, string previous_word) {
-	cout << "SuggestionGenerator::getSuggestions(): Retrieving suggestions for modified_word, "
-		 "previous_word: " << modified_word << ", " << previous_word << endl;
+	cout << "SuggestionGenerator::getSuggestions(): Retrieving suggestions for "
+		 "modified_word, previous_word: " << modified_word << ", " << previous_word << endl;
 	auto n = modified_word.size();
 
 	// check for the case that word_list.addCompareChar() can't be used. if the only 
@@ -56,20 +58,19 @@ string SuggestionGenerator::getSuggestions(string modified_word, string previous
 	return suggestions_str;
 }
 
-void SuggestionGenerator::useWords(string words) {
+void SuggestionGenerator::useWords(const string &words) {
+
 	stringstream file_ss;
     file_ss.str(words);
 
     string line;
 
-	//size_t tab_indexes[3];
 	size_t added_word_count = 0;
 
 	string word_str;
 	string word_pos_str;
 	uint32_t word_count;
 	float word_frequency;
-
 
     while (getline(file_ss, line, '\n')) {
 		stringstream line_ss(line);
@@ -87,5 +88,10 @@ void SuggestionGenerator::useWords(string words) {
 		" words to dictionary\n";
 }
 
+bool SuggestionGenerator::ready() {
+	return dictionary_.ready();
+}
+
 
 /* -------------------- private functions -------------------- */
+

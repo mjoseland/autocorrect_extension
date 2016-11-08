@@ -2,22 +2,26 @@
 
 /* PUBLIC */
 
-Word::Word(string word, uint32_t count, float distribution) : word_(word), 
-			word_len_(word_.size()), count_(count), distribution_(distribution) {
-    j_ = 0;
-    current_column_ = false;
-	//min_ed_ = 0;
-	is_correct_pspeech_ = false;
+Word::Word(const string &word, const uint32_t &count, const float &distribution) : 
+		word_(word), count_(count), distribution_(distribution),
+		ed_matrix_(word_.size()) {
 
-    ed_matrix_ = vector<vector<uint8_t>>(word_len_, vector<uint8_t>(2));
+	if (word_.size() > 255) {
+		cerr << "Word::Word(): Trying to initialise word w/ len > 255" << endl;
+		return;
+	}
+
+    j_ = 0;
+	is_correct_pspeech_ = true;
 }
+
 
 string Word::getWord() {
     return word_;
 }
 
 size_t Word::getLength() {
-    return word_len_;
+    return ed_matrix_.size();
 }
 
 uint8_t Word::getCost() {
@@ -28,34 +32,33 @@ uint32_t Word::getCount() {
     return count_;
 }
 
+// TODO tweak constants in word.h and edit_cost_array.h
+// 		properly handle dash and apostrophe
 void Word::addCompareChar(char c) {
     uint8_t edit_distance;
     uint8_t min_ed = UINT8_MAX;
 	cost_ = UINT8_MAX;
-	//uint8_t min_ed;
 	
 	uint8_t length_mismatch_penalty;	// the difference between this word's length and 
 										// that of the compare word
-	if (word_len_ <= j_ + 1) {
-		length_mismatch_penalty = (j_ + 1 - word_len_) * LEN_MISMATCH_PENALTY_MULT;
+	if (ed_matrix_.size() <= j_ + 1) {
+		length_mismatch_penalty = (j_ + 1 - ed_matrix_.size()) * LEN_MISMATCH_PENALTY_MULT;
 	} else {
-		length_mismatch_penalty = (word_len_ - j_ + 1) * LEN_MISMATCH_PENALTY_MULT;
+		length_mismatch_penalty = (ed_matrix_.size() - j_ + 1) * LEN_MISMATCH_PENALTY_MULT;
 	}
 
     // find ED for all elements in the column
-    for (size_t i = 0; i < word_len_; i++) {
+    for (size_t i = 0; i < ed_matrix_.size(); i++) {
         edit_distance = get_element_ed(c, i);
 
-        ed_matrix_[i][current_column_] = edit_distance;
+        ed_matrix_.get(i, j_ & 1) = edit_distance;
         min_ed = MIN(min_ed, edit_distance);
 
 		cost_ = MIN(cost_, min_ed + length_mismatch_penalty + 
 				!is_correct_pspeech_ * INCORRECT_PSPEECH_PENALTY);
     }
 
-    // increment the column index and update current_column_
     j_++;
-    current_column_ = j_ & 1;
 
 	previous_char_ = c;
 
@@ -72,8 +75,7 @@ void Word::setCorrectPspeech(bool is_correct_pspeech) {
 
 void Word::resetCompareWord() {
     j_ = 0;
-    current_column_ = false;
-	//min_ed_ = 0;
+
 	cost_ = 0;
 	previous_char_ = '*';
 }
@@ -128,21 +130,21 @@ uint8_t Word::get_element_ed(char c, size_t i) {
         }
 
         // if not first row: return the value of the element above + deletion cost * penalty
-        return ed_matrix_[i - 1][0] + (ins_del_cost * FIRST_LETTER_PENALTY_MULT);
+        return ed_matrix_.get(i, 0) + (ins_del_cost * FIRST_LETTER_PENALTY_MULT);
     }
 
 
     // if element is the first row and not the first column, return left number + insertion 
 	// cost
     if (i == 0) {
-        return ed_matrix_[i][!current_column_] + ins_del_cost;
+        return ed_matrix_.get(i, !(j_ & 1)) + ins_del_cost;
     }
 
     // we aren't in the first row or column: return min of insertion, deletion, or 
 	// substitution
-    return min_of_three(ed_matrix_[i][!current_column_] + ins_del_cost,		// insertion
-			ed_matrix_[i - 1][current_column_] + ins_del_cost,				// deletion
-            ed_matrix_[i - 1][!current_column_] + substitution_cost);		// substitution
+    return min_of_three(ed_matrix_.get(i, !(j_ & 1)) + ins_del_cost,		// insertion
+			ed_matrix_.get(i - 1, !(j_ & 1)) + ins_del_cost,				// deletion
+            ed_matrix_.get(i - 1, !(j_ & 1)) + substitution_cost);		// substitution
 }
 
 uint8_t Word::min_of_three(uint8_t a, uint8_t b, uint8_t c) {

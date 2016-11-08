@@ -13,18 +13,18 @@
 #include "autocorrect_instance.h"
 
 class AutocorrectModule : public pp::Module {
-	public:
-		AutocorrectModule() : pp::Module() {}
+public:
+	AutocorrectModule() : pp::Module() { }
 
-		virtual ~AutocorrectModule() {}
+	virtual ~AutocorrectModule() { }
 
-		virtual pp::Instance *CreateInstance(PP_Instance pp_instance) {
-			AutocorrectInstance::createInstance(pp_instance);
+	virtual pp::Instance *CreateInstance(PP_Instance pp_instance) {
+		AutocorrectInstance::createInstance(pp_instance);
 
-			AutocorrectInstance *instance = AutocorrectInstance::instance();
+		AutocorrectInstance *instance = AutocorrectInstance::instance();
 
-			return instance;
-		}
+		return instance;
+	}
 };
 
 namespace pp {

@@ -1,8 +1,5 @@
 #include "dictionary.h"
 
-#include <iostream>	// TODO remove
-
-
 Dictionary::Dictionary() {
 	constructPspeechMap();
 	constructPspeechOrderVector();
@@ -11,8 +8,8 @@ Dictionary::Dictionary() {
 	words_ = vector<vector<Word>>(PSPEECH_COUNT);
 }
 
-// TODO: set words_ size in constructor or some other solution to manage words_'s size 
-void Dictionary::addWord(string word_str, string pos_str, int count, float frequency) {
+void Dictionary::addWord(const string &word_str, const string &pos_str, const int &count, 
+		const float &frequency) {
 	if (finalised_) {
 		cerr << "Dictionary::addWord(): Blocked attempt to add word to finalised dictionary"
 			<< endl;
@@ -30,19 +27,10 @@ void Dictionary::addWord(string word_str, string pos_str, int count, float frequ
 	}
 
 	// add the word to pos index mapping
-	word_pspeech_map_.emplace(word_str, pspeech_it->second);
-	
+	word_pspeech_map_.emplace(word_str, (int)pspeech_it->second);
+
 	// add the word to the correct pos_list
     words_[pspeech_it->second].push_back(Word(word_str, count, frequency));
-}
-
-void Dictionary::finalise() {
-	// shrink the capacity of all pos vectors in words_
-	for (auto pos_vector: words_) {
-		pos_vector.shrink_to_fit();
-	}
-
-	finalised_ = true;
 }
 
 void Dictionary::addCompareChar(char c, string &previous_word) {
@@ -70,7 +58,6 @@ void Dictionary::addCompareChar(char c, string &previous_word) {
 		for (size_t j = 0; j < n; j++) {
 			// the current word the compare char is being added to
 			// should be safe because words_ won't be reallocated in this method
-			// TODO: maybe fix for good practice
 			word_ptr = &words_[i][j];
 
 			if (word_ptr->getCost() > MAX_ED) {
@@ -82,7 +69,7 @@ void Dictionary::addCompareChar(char c, string &previous_word) {
 			// if the word should be added as a new closest word, do so 
 			if (word_ptr->getCost() <= MAX_ED && !in_closest_words(word_ptr->getWord()) &&
 						 (closest_word_indexes_.size() < CLOSEST_WORDS_N ||
-						 min_closest_word == nullptr || 		//TODO: remove line
+						 //min_closest_word == nullptr ||
 						 *word_ptr > *min_closest_word)) {
 				
 				insertNewClosestWordIndex(i, j);
@@ -121,9 +108,21 @@ void Dictionary::resetCompareWord() {
 	}
 }
 
+void Dictionary::finalise() {
+	// shrink the capacity of all pos vectors in words_
+	for (auto pos_vector: words_) {
+		pos_vector.shrink_to_fit();
+	}
+
+	finalised_ = true;
+}
+
+bool Dictionary::ready() {
+	return finalised_;
+}
+
 /* -------------------- private functions -------------------- */
 
-// TODO: make more efficient
 void Dictionary::insertNewClosestWordIndex(size_t new_i, size_t new_j) {
     // if we're adding the first new closest word to the vector, do so and return
     if (closest_word_indexes_.empty()) {
@@ -187,8 +186,8 @@ void Dictionary::constructPspeechOrderVector() {
 			"Pron", "Prep", "Conj", "Det", "Num", "Inf", "Neg"};
 
 	// VerbTPP
-	pspeech_str_orders[pspeech_map_["VerbTPP"]] = {"NoC", "NoP", "Adv", "Adj", "DetP", "Prep",
-		"Pron", "Conj", "Int", "Det", "Num", "Inf", "Neg"};
+	pspeech_str_orders[pspeech_map_["VerbTPP"]] = {"NoC", "NoP", "Adv", "Adj", "DetP", 
+		"Prep", "Pron", "Conj", "Int", "Det", "Num", "Inf", "Neg"};
 
 	// VerbPa
 	pspeech_str_orders[pspeech_map_["VerbPa"]] = {"NoC", "NoCPl", "NoCPo", "NoP", "NoPPl", 
@@ -330,8 +329,6 @@ void Dictionary::updatePspeechPenalties() {
 
 
 uint8_t Dictionary::get_pspeech(string word) {
-	cerr << word_pspeech_map_.size() << endl; // TODO remove
-
 	auto map_entry_it = word_pspeech_map_.find(word);
 	size_t pspeech;
 

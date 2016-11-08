@@ -2,12 +2,7 @@
 // Created by Malcolm Joseland on 3/08/2016.
 //
 
-//#include <fstream>
-//#include <iostream>
-//#include <cstdlib>
-
 #include "autocorrect_instance.h"
-
 
 void AutocorrectInstance::HandleMessage(const pp::Var &message) {
 	string message_str = message.AsString();
@@ -20,7 +15,8 @@ void AutocorrectInstance::HandleMessage(const pp::Var &message) {
 	// handle suggestions request message
 	if (message_str.substr(0, 3) == "rs:") {
 		size_t space_i;
-		for (space_i = 2; space_i < message_str.size() && message_str[space_i] != ' '; space_i++);
+		for (space_i = 2; space_i < message_str.size() && message_str[space_i] != ' '; 
+				space_i++);
 
 		string suggestions = suggestion_generator_.getSuggestions(
 				message_str.substr(3, space_i - 3), 
@@ -32,8 +28,7 @@ void AutocorrectInstance::HandleMessage(const pp::Var &message) {
 	}
 
 	// handle the browser sending the word list to use
-	if (message_str.substr(0, 3) == "wl:" && !words_added_) {
-		words_added_ = true;
+	if (message_str.substr(0, 3) == "wl:" && !suggestion_generator_.ready()) {
 		suggestion_generator_.useWords(message_str.substr(3));
 	}
 }
@@ -41,3 +36,4 @@ void AutocorrectInstance::HandleMessage(const pp::Var &message) {
 
 /* -------------------- private functions -------------------- */
 
+AutocorrectInstance::AutocorrectInstance(PP_Instance instance) : pp::Instance(instance) { }

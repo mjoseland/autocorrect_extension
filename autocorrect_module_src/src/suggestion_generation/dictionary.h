@@ -10,9 +10,10 @@
 #define PSPEECH_COUNT 24
 #define UNCL_PSPEECH_INDEX PSPEECH_COUNT - 1
 
-#include <vector>
+#include <iostream>
 #include <list>
 #include <unordered_map>
+#include <vector>
 
 #include "word.h"
 
@@ -60,7 +61,8 @@ public:
 
     vector<string> getClosestWords();
 
-    void addWord(string word, string pspeech_str, int count, float frequency);
+    void addWord(const string &word, const string &pspeech_str, const int &count, 
+			const float &frequency);
     void addCompareChar(char c, string &previous_word);
 
 	// resets all scoring for word suggestions, ie. gets ready to start providing suggestions 
@@ -69,6 +71,8 @@ public:
 
 	// finalise the dictionary : becomes usable but no new words can be added
 	void finalise();
+
+	bool ready();
 
 private:
 	bool finalised_ = false;
@@ -80,11 +84,11 @@ private:
 
 	// maps words to their part of speech index
 	// ie. "available" : 11
-	unordered_multimap<string, size_t> word_pspeech_map_;
+	unordered_multimap<string, uint8_t> word_pspeech_map_;
 
 	// maps part of speech strings to their index 
 	// ie. pspeech_str : pspeech, "Verb" : 0
-	unordered_map<string, size_t> pspeech_map_;
+	unordered_map<string, uint8_t> pspeech_map_;
   
 	// 
 	vector<vector<bool>> pspeech_order_vector_;

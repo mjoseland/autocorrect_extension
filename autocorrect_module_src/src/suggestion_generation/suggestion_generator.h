@@ -30,7 +30,10 @@ public:
 
 	// TODO: fix all the code related to this
 	// part of the temp solution to get the words from the text file
-	void useWords(string words);
+	void useWords(const string &words);
+
+	// returns true if the suggestion generator is ready to generate suggestions
+	bool ready();
 
 private:
 	// the WordList object used to generate suggestions
@@ -41,6 +44,8 @@ private:
 
 	// the previous word that was paired with last_modified_word_
 	string previous_word_;
+
+	//bool finalised_ = false;
 };
 
 

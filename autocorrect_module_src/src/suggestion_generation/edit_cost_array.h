@@ -1,13 +1,19 @@
 //
 // Created by Malcolm Joseland on 14/09/2016.
 //
+//
+#ifndef GLOBAL_AUTOCOMPLETE_EDITCOSTARRAY_H
+#define GLOBAL_AUTOCOMPLETE_EDITCOSTARRAY_H
 
 #include <array>
 
-#include "definitions.h"
 #include <vector>
 #include <array>
 #include <string>
+
+#ifndef COST
+#define COST uint8_t
+#endif
 
 // costs of different edit operations
 // insert/delete
@@ -18,7 +24,7 @@
 // substitution
 #define KP 3	// letter is keyboard-proximal (1 button away)
 //#define SP 6	// letter is semi-proximal (proximal to a proximal) (~2 buttons away)
-#define NP 8	// letter isn't proximal (>2 buttons away)
+#define NP 8	// letter isn't proximal (>=2 buttons away)
 #define NC 10	// either char is a non-letter char, ie. "-" or "'"
 
 using namespace std;
@@ -45,3 +51,5 @@ public:
 	static COST subCost(char new_char, char word_char);
 private:
 };
+
+#endif // GLOBAL_AUTOCOMPLETE_EDITCOSTARRAY_H

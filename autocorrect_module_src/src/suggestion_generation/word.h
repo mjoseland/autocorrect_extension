@@ -9,30 +9,35 @@
 #define MIN(a, b) ((a < b) ? a : b)
 #define FIRST_LETTER_PENALTY_MULT 3
 #define LEN_MISMATCH_PENALTY_MULT 0
-#define INCORRECT_PSPEECH_PENALTY 5
+#define INCORRECT_PSPEECH_PENALTY 7
 
 #include <vector>
 #include <string>
 #include <iostream>
 
 #include "edit_cost_array.h"
-#include "definitions.h"
+#include "ed_matrix.h"
+
+#ifndef COST
+#define COST uint8_t
+#endif
 
 using namespace std;
 
 class Word{
 public:
-    Word(string word, uint32_t count, float distribution);
+    Word(const string &word, const uint32_t &count, const float &distribution);
 
     string getWord();
     size_t getLength();
 	// get the cost of replacing the comare word with this word
-    uint8_t getCost();
+    COST getCost();
 	// get the frequency count of the word
     uint32_t getCount();
 
 	// add another char to the compare word
     void addCompareChar(char c);
+	// set whether or not this word is the correct part of speech
 	void setCorrectPspeech(bool is_correct_pspeech);
 	// reset the compare word
     void resetCompareWord();
@@ -51,24 +56,22 @@ public:
 
 
 private:
-    const string word_;
-    const size_t word_len_;
-    const uint32_t count_;  // the frequency count of the word (larger value : word used more 
-							// often)
-	const float distribution_;	// the distribution of the word : higher = used in a wider
-								// variety of situations
+    const string word_;			// TODO custom data type to save memory, SmallString?
 
-    size_t j_;              // the "index" of the next char to be added in the matrix
-                            // (if it wasn't two columns)
+    const uint32_t count_;  	// the frequency count of the word (larger value : word used
+								// more often) (TODO: change to uint16_t to optimise memory)
+	const float distribution_;	// the distribution of the word : higher dist used in a wider
+								// range of contexts
+
+    uint8_t j_;             	// the "index" of the next char to be added in the matrix
+                            	// (if it wasn't two columns) (TODO: change to uint8_t)
+							
 	char previous_char_ = '*';	// the char that was previously added to the compare word
-    //uint8_t min_ed_;
-	uint8_t cost_;			// cost of replacing the compare word with this word
-    bool current_column_;   // index to calculate ed of next char added in ed_matrix_
+
+	COST cost_;					// cost of replacing the compare word with this word
 	bool is_correct_pspeech_;	// true if this word is the correct part of speech as a
 								// suggestion
-	
-
-    vector<vector<uint8_t>> ed_matrix_; // 2-colummn matrix for calculating edit distance
+	EdMatrix ed_matrix_;
 
     uint8_t get_element_ed(char c, size_t i);
     uint8_t min_of_three(uint8_t a, uint8_t b, uint8_t c);
