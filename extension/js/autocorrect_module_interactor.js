@@ -22,6 +22,36 @@ var coordinates;
 // true if suggestions are being generated for the test page
 var onTestPage = false;
 
+var coordinatesQueue = new Queue();
+
+// TODO popup on clicking on word (work out how to do & implement)
+
+function Queue() {
+	var queue = [];
+	var index = 0;
+
+	this.push = function(item) {
+		queue.push(item);
+	}
+
+	this.pop = function() {
+		if (queue.length >= 8 && index >= queue.length) {
+			console.log("Queue::pop(): ERROR: index >= queue.length");
+			return null;
+		}
+
+		returnItem = queue[index];
+		index++;
+
+		if (index >= queue.length / 2) {
+			queue = queue.slice(index, queue.length);
+			index = 0;
+		}
+
+		return returnItem;
+	}
+}
+
 // removes all autocorrect_suggestions elements
 function removeSuggestionsElements() {
 	var suggestionsElements = document.getElementsByClassName("autocorrect_suggestions");
@@ -31,10 +61,10 @@ function removeSuggestionsElements() {
 	}
 }
 
-function updateCoordinates(inputElementIndex) {
+function getCoordinates(inputElementIndex) {
 	var baseElement = inputElements[inputElementIndex].getBaseElement();
 
-	coordinates = getCaretCoordinates(baseElement, baseElement.selectionEnd);
+	var coordinates = getCaretCoordinates(baseElement, baseElement.selectionEnd);
 
 	var fontSize = parseFloat(
 			window.getComputedStyle(baseElement, null).getPropertyValue('font-size'));
@@ -44,18 +74,14 @@ function updateCoordinates(inputElementIndex) {
 	coordinates.top += baseElement.offsetTop - baseElement.scrollTop + fontSize;
 	coordinates.left += baseElement.offsetLeft - baseElement.scrollLeft;
 
-	console.log('updateCareCoordinates(): ' + coordinates.top + ' ' + coordinates.left);
+	console.log('getCoordinates(): ' + coordinates.top + ' ' + coordinates.left);
+
+	return coordinates;
 }
 
-function createSuggestionsElement(suggestionsStr) {
-	// remove all autocorrect_suggestions elements
-	removeSuggestionsElements();
-
-	if (coordinates == null) {
-		updateCoordinates();
-	}
-
-	//console.log('TEST: ' + coordinates.top + ' ' + coordinates.left);
+// TODO coordinates on backspace into previous word
+function createSuggestionsElement(suggestionsStr, coordinates) {
+	console.log('TEST: ' + coordinates.top + ' ' + coordinates.left);
 
 	// create new autocorrect_suggestions element
     var elementStr = '<div class="autocorrect_suggestions"><table>\n';
@@ -97,13 +123,44 @@ function setSuggestions(suggestionsStr) {
 		}
 	}
 
-	if (suggestionsStr == '-') {
-		removeSuggestionsElements();
-	} else {
-		createSuggestionsElement(suggestionsStr);
+	// dequeue coordinates
+	var coordinates = coordinatesQueue.pop();
+	removeSuggestionsElements();
+
+	if (suggestionsStr !== '-' && suggestionsStr.length > 0) {
+		createSuggestionsElement(suggestionsStr, coordinates);
 	}
 
 }
+
+// returns true:	if newTextBeforeCw doesn't match the start of oldText
+//					if newTextAfterCw doesn't match the end of oldText
+function changesOutsideCw(beforeCw, afterCw, oldText) {
+	if (beforeCw !== oldText.substring(0, beforeCw.length)) {
+		return true;
+	}
+
+	if (afterCw !== oldText.substring(oldText.length - afterCw.length, oldText.length)) {
+		return true;
+	}
+
+	if (oldText.length - afterCw.length >= 1) {
+		console.log('!!!: ' + oldText.charAt(oldText.length - afterCw.length - 1));
+	}
+
+	if (oldText.length - afterCw.length >= 1 && !(afterCw.length === 0) &&
+			!inWordChars.hasOwnProperty(oldText.charAt(oldText.length - afterCw.length - 1))) {
+		return true;
+	}
+
+	console.log('\|' + afterCw + '\|');
+	console.log('\|' + oldText.substring(oldText.length - afterCw.length, oldText.length) + '\|');
+
+	return false;
+}
+
+
+
 
 // TODO ensure only one word has been changed
 // 		handle users pressing multiple keys quickly
@@ -136,7 +193,6 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 		i++;
 	}
 	i--;
-
 	var changedWordEnd = i;
 
 	// find the start of the changed word
@@ -144,14 +200,27 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 		i--;
 	}
 	i++;
-
 	var changedWordStart = i;
-	
-	var changedWord = '-'
 
+	var newTextBeforeCw = newText.substring(0, changedWordStart);
+	var newTextAfterCw = newText.substring(changedWordEnd + 1, newText.length);
+
+	if (changesOutsideCw(newTextBeforeCw, newTextAfterCw, oldText)) {
+		console.log('makeSuggestionsRequestMessage(): changes outside changed word');
+		return '-';
+	}
+	
+	var changedWord = '-';
+
+	// find changed word, if there is one
 	if (changedWordStart <= changedWordEnd && 
 			(changedWordStart == 0 || newText[changedWordStart - 1] == ' ')) {
 		changedWord = newText.substring(changedWordStart, changedWordEnd + 1);
+	}
+
+	if (changedWord === '-') {
+		console.log('makeSuggestionsRequestMessage(): no valid changed word');
+		return '-';
 	}
 
 	i--;
@@ -160,7 +229,6 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 	while (i >= 0 && !inWordChars.hasOwnProperty(newText[i])) {
 		i--;
 	}
-
 	var previousWordEnd = i;
 
 	// find the start of the previous word, if one exists
@@ -169,7 +237,6 @@ function makeSuggestionsRequestMessage(newText, oldText) {
 		i--;
 	}
 	i++;
-
 	var previousWordStart = i;
 
 	var previousWord = '-';
@@ -211,31 +278,26 @@ function handleTextAreaChange(inputElementIndex) {
 
 	// if a suggestions request is necessary, send one to the NaCL module
 	if (suggestionsRequestMessage != '-') {
+		// enqueue coordinates at time of sending message
+		coordinatesQueue.push(getCoordinates(inputElementIndex));
 		autocorrectModule.postMessage(suggestionsRequestMessage);
 	} else {
-		console.log("GH");
 		setSuggestions('-');
-		updateCoordinates(inputElementIndex);
+		//updateCoordinates(inputElementIndex);
+
 	}
 
 }
 
 function handleInputEvent() {
-	//var coordinates = getCaretCoordinates(this, this.selectionEnd);
-	//
-	//console.log(inputElements.length);
-
-	//console.log('handleTextAreaChange(): coordinates: ' + coordinates.top + 
-			//' ' + coordinates.left);
-
 	// iterate through all original text areas on the page
 	for (var i = 0; i < inputElements.length; i++) {
 		// if the text area is the active element
 		if (inputElements[i].isActiveElement()) {
-			if (inputElements[i].getValue() == '') {
-				updateCoordinates(i);
-				break;
-			}
+			//if (inputElements[i].getValue() == '') {
+				//updateCoordinates(i);
+				//break;
+			//}
 			
 			// if the text area's value has changed, handle the change
 			if (inputElements[i].hasUnhandledChange()) {
@@ -302,6 +364,7 @@ function TextInputElement(baseElement) {
 	var oldValue = this.getValue();
 }
 
+// TODO move to style sheet
 function addCss() {
 	// 		     font	 		     fill			 	 hover-fill			 border
 	// grey
@@ -379,6 +442,9 @@ function addCss() {
 //
 // called on module load
 function moduleDidLoad() {
+	// failed attempt to stop this function getting called twice
+	//document.getElementById('listener').addEventListener('load', null);
+
   	autocorrectModule = document.getElementById('autocorrect_module');
 
 	if (testPage != undefined) {

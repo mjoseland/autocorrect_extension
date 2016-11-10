@@ -94,6 +94,20 @@ function getCaretCoordinates(element, position, options) {
   }
 
   div.textContent = element.value.substring(0, position);
+
+  // additional code by Malcolm Joseland: finding caret position after last space instead
+  var lastSpaceIndex = div.textContent.lastIndexOf(' ');
+
+  // 99% sure this is redundant as lastIndexOf returns -1 when substr not present, keep it 
+  // for safety
+  if (lastSpaceIndex < 0) {
+	  lastSpaceIndex = -1;
+  }
+
+  div.textContent = div.textContent.substring(0, lastSpaceIndex + 1);
+
+  // END additional code
+
   // the second special handling for input type="text" vs textarea: spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
   if (element.nodeName === 'INPUT')
     div.textContent = div.textContent.replace(/\s/g, '\u00a0');
